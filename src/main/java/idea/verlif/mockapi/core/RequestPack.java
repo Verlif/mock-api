@@ -1,5 +1,7 @@
 package idea.verlif.mockapi.core;
 
+import idea.verlif.mockapi.anno.MockResult;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
@@ -31,16 +33,30 @@ public class RequestPack {
     private final HttpServletResponse response;
 
     /**
+     * 调用方法的所属对象
+     */
+    private final Object methodHolder;
+
+    /**
      * 原调用的方法对象
      */
     private final Method oldMethod;
 
-    public RequestPack(Map<String, String> pathVars, Map<String, Object> params, HttpServletRequest request, HttpServletResponse response, Method oldMethod) {
+    /**
+     * 使用的MockResult注解
+     */
+    private final MockResult mockResult;
+
+    public RequestPack(Map<String, String> pathVars, Map<String, Object> params,
+                       HttpServletRequest request, HttpServletResponse response,
+                       Object methodHolder, Method oldMethod, MockResult mockResult) {
         this.pathVars = pathVars;
         this.params = params;
         this.request = request;
         this.response = response;
+        this.methodHolder = methodHolder;
         this.oldMethod = oldMethod;
+        this.mockResult = mockResult;
     }
 
     public Object getParam(String key) {
@@ -67,7 +83,15 @@ public class RequestPack {
         return response;
     }
 
+    public Object getMethodHolder() {
+        return methodHolder;
+    }
+
     public Method getOldMethod() {
         return oldMethod;
+    }
+
+    public MockResult getMockResult() {
+        return mockResult;
     }
 }

@@ -1,6 +1,5 @@
 package idea.verlif.mockapi.core;
 
-import idea.verlif.mock.data.MockDataCreator;
 import idea.verlif.mockapi.anno.MockResult;
 import idea.verlif.mockapi.config.MockApiConfig;
 import org.springframework.beans.factory.InitializingBean;
@@ -30,9 +29,6 @@ public class MockApi implements InitializingBean {
     private MockApiConfig mockApiConfig;
 
     @Resource
-    private MockDataCreator mockDataCreator;
-
-    @Resource
     private MockResultCreator mockResultCreator;
 
     private final RequestMappingInfo.BuilderConfiguration config;
@@ -58,7 +54,8 @@ public class MockApi implements InitializingBean {
                 RequestMappingInfo mappingInfo = methodEntry.getKey();
                 RequestMappingInfo extraInfo = buildRequestMappingInfo(mappingInfo);
                 Method method = methodEntry.getValue().getMethod();
-                MockMethodHolder mockMethodHolder = new MockMethodHolder(method);
+                MockMethodHolder mockMethodHolder = new MockMethodHolder(handlerMethod.getBean(), method, result);
+
                 handlerMapping.registerMapping(extraInfo, mockMethodHolder, mockMethod);
             }
         }
@@ -106,18 +103,38 @@ public class MockApi implements InitializingBean {
         register();
     }
 
+    /**
+     * 构建方法数据类
+     */
     public final class MockMethodHolder {
 
+        private final Object methodHolder;
         private final Method oldMethod;
+        private final MockResult mockResult;
 
-        public MockMethodHolder(Method oldMethod) {
+        private Object object;
+
+        public MockMethodHolder(Object methodHolder, Method oldMethod, MockResult mockResult) {
+            this.methodHolder = methodHolder;
             this.oldMethod = oldMethod;
+            this.mockResult = mockResult;
         }
 
         @ResponseBody
         public Object mock(Map<String, String> pathVar, Map<String, Object> param, HttpServletRequest request, HttpServletResponse response) {
-            RequestPack pack = new RequestPack(pathVar, param, request, response, oldMethod);
-            return mockResultCreator.mock(pack, mockDataCreator, oldMethod.getReturnType());
+            Object o;
+            if (object == null) {
+                RequestPack pack = new RequestPack(pathVar, param, request, response, methodHolder, oldMethod, mockResult);
+                o = mockResultCreator.mock(pack, mockApiConfig.getMockDataCreator());
+            } else {
+                o = object;
+            }
+            if (mockResult.cacheable()) {
+                object = o;
+            } else {
+                object = null;
+            }
+            return o;
         }
     }
 }

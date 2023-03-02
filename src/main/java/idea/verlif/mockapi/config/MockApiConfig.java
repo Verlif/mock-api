@@ -1,20 +1,24 @@
 package idea.verlif.mockapi.config;
 
 import idea.verlif.mock.data.MockDataCreator;
+import idea.verlif.mockapi.core.MockApi;
 import idea.verlif.mockapi.core.MockResultCreator;
-import idea.verlif.mockapi.core.RequestPack;
+import idea.verlif.mockapi.pool.YamlDataPool;
+import idea.verlif.reflection.domain.MethodGrc;
+import idea.verlif.reflection.util.ReflectUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Map;
+import org.springframework.context.annotation.Import;
 
 /**
  * 接口构造配置
  */
 @Configuration
 @ConfigurationProperties(prefix = "mockapi")
+@Import({MockApi.class})
 public class MockApiConfig {
 
     /**
@@ -23,26 +27,37 @@ public class MockApiConfig {
     private String path = "mock";
 
     /**
+     * 数据池配置
+     */
+    private YamlDataPool pool;
+
+    /**
      * 地址新增方式
      */
     private POSITION position = POSITION.PREFIX;
 
-    public MockApiConfig() {
+    private final MockDataCreator creator;
+
+    public MockApiConfig(@Autowired(required = false) YamlDataPool yamlDataPool) {
+        creator = new MockDataCreator();
+        creator.fieldDataPool(yamlDataPool);
+        creator.getConfig()
+                .autoCascade(true);
     }
 
-    @Bean
-    @ConditionalOnMissingBean(MockDataCreator.class)
     public MockDataCreator getMockDataCreator() {
-        return new MockDataCreator();
+        return creator;
     }
 
     @Bean
     @ConditionalOnMissingBean(MockResultCreator.class)
     public MockResultCreator getMockResultCreator() {
-        return new MockResultCreator() {
-            @Override
-            public <T> T mock(RequestPack pack, MockDataCreator creator, Class<T> target) {
-                return creator.mock(target);
+        return (pack, creator) -> {
+            try {
+                MethodGrc methodGrc = ReflectUtil.getMethodGrc(pack.getOldMethod(), pack.getMethodHolder().getClass());
+                return creator.mock(methodGrc.getResult());
+            } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
+                throw new RuntimeException(e);
             }
         };
     }
