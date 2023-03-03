@@ -3,9 +3,8 @@ package idea.verlif.mockapi.config;
 import idea.verlif.mock.data.MockDataCreator;
 import idea.verlif.mockapi.core.MockApi;
 import idea.verlif.mockapi.core.MockResultCreator;
+import idea.verlif.mockapi.core.creator.DefaultMockResultCreator;
 import idea.verlif.mockapi.pool.YamlDataPool;
-import idea.verlif.reflection.domain.MethodGrc;
-import idea.verlif.reflection.util.ReflectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -18,18 +17,13 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration
 @ConfigurationProperties(prefix = "mockapi")
-@Import({MockApi.class})
+@Import({MockApi.class, YamlDataPool.class})
 public class MockApiConfig {
 
     /**
      * 地址名称
      */
     private String path = "mock";
-
-    /**
-     * 数据池配置
-     */
-    private YamlDataPool pool;
 
     /**
      * 地址新增方式
@@ -52,14 +46,7 @@ public class MockApiConfig {
     @Bean
     @ConditionalOnMissingBean(MockResultCreator.class)
     public MockResultCreator getMockResultCreator() {
-        return (pack, creator) -> {
-            try {
-                MethodGrc methodGrc = ReflectUtil.getMethodGrc(pack.getOldMethod(), pack.getMethodHolder().getClass());
-                return creator.mock(methodGrc.getResult());
-            } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
-                throw new RuntimeException(e);
-            }
-        };
+        return new DefaultMockResultCreator();
     }
 
     public String getPath() {
