@@ -1,8 +1,8 @@
-package idea.verlif.mockapi.core.creator;
+package idea.verlif.mockapi.core.impl;
 
 import idea.verlif.mock.data.MockDataCreator;
-import idea.verlif.mockapi.core.MockResultCreator;
 import idea.verlif.mockapi.core.RequestPack;
+import idea.verlif.mockapi.core.creator.MockResultCreator;
 import idea.verlif.reflection.domain.MethodGrc;
 import idea.verlif.reflection.util.ReflectUtil;
 

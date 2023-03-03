@@ -2,8 +2,10 @@ package idea.verlif.mockapi.config;
 
 import idea.verlif.mock.data.MockDataCreator;
 import idea.verlif.mockapi.core.MockApi;
-import idea.verlif.mockapi.core.MockResultCreator;
-import idea.verlif.mockapi.core.creator.DefaultMockResultCreator;
+import idea.verlif.mockapi.core.creator.MockParamsCreator;
+import idea.verlif.mockapi.core.creator.MockResultCreator;
+import idea.verlif.mockapi.core.impl.DefaultMockParamsCreator;
+import idea.verlif.mockapi.core.impl.DefaultMockResultCreator;
 import idea.verlif.mockapi.pool.YamlDataPool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -21,9 +23,14 @@ import org.springframework.context.annotation.Import;
 public class MockApiConfig {
 
     /**
-     * 地址名称
+     * 结果地址
      */
-    private String path = "mock";
+    private Path resultPath = new Path("mock", POSITION.PREFIX);
+
+    /**
+     * 参数地址
+     */
+    private Path paramsPath = new Path("params", POSITION.PREFIX);
 
     /**
      * 地址新增方式
@@ -49,12 +56,26 @@ public class MockApiConfig {
         return new DefaultMockResultCreator();
     }
 
-    public String getPath() {
-        return path;
+    @Bean
+    @ConditionalOnMissingBean(MockParamsCreator.class)
+    public MockParamsCreator getMockParamsCreator() {
+        return new DefaultMockParamsCreator();
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public Path getResultPath() {
+        return resultPath;
+    }
+
+    public void setResultPath(Path resultPath) {
+        this.resultPath = resultPath;
+    }
+
+    public Path getParamsPath() {
+        return paramsPath;
+    }
+
+    public void setParamsPath(Path paramsPath) {
+        this.paramsPath = paramsPath;
     }
 
     public POSITION getPosition() {
@@ -63,6 +84,44 @@ public class MockApiConfig {
 
     public void setPosition(POSITION position) {
         this.position = position;
+    }
+
+    /**
+     * 路径地址
+     */
+    public static final class Path {
+
+        private String value;
+
+        private POSITION position;
+
+        public Path() {
+        }
+
+        public Path(String value, POSITION position) {
+            this.value = value;
+            this.position = position;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public POSITION getPosition() {
+            return position;
+        }
+
+        public void setPosition(String position) {
+            this.position = POSITION.valueOf(position);
+        }
+
+        public void setPosition(POSITION position) {
+            this.position = position;
+        }
     }
 
     public enum POSITION {
@@ -76,5 +135,6 @@ public class MockApiConfig {
          * 后缀方式
          */
         SUFFIX,
+        ;
     }
 }

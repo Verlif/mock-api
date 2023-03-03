@@ -1,7 +1,9 @@
 package idea.verlif.mockapi.controller;
 
+import idea.verlif.mockapi.anno.MockParams;
 import idea.verlif.mockapi.anno.MockResult;
 import idea.verlif.mockapi.global.domain.User;
+import idea.verlif.mockapi.global.domain.query.UserQuery;
 import idea.verlif.mockapi.global.result.BaseResult;
 import idea.verlif.mockapi.global.result.ext.OkResult;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@MockParams
 @MockResult
 @RestController
 @RequestMapping("user")
@@ -20,7 +23,7 @@ public class UserController {
     }
 
     @GetMapping("list")
-    public BaseResult<List<User>> getList() {
+    public BaseResult<List<User>> getList(UserQuery query) {
         return new OkResult<>(new ArrayList<>());
     }
 

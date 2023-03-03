@@ -42,21 +42,15 @@ public class RequestPack {
      */
     private final Method oldMethod;
 
-    /**
-     * 使用的MockResult注解
-     */
-    private final MockResult mockResult;
-
     public RequestPack(Map<String, String> pathVars, Map<String, Object> params,
                        HttpServletRequest request, HttpServletResponse response,
-                       Object methodHolder, Method oldMethod, MockResult mockResult) {
+                       Object methodHolder, Method oldMethod) {
         this.pathVars = pathVars;
         this.params = params;
         this.request = request;
         this.response = response;
         this.methodHolder = methodHolder;
         this.oldMethod = oldMethod;
-        this.mockResult = mockResult;
     }
 
     public Object getParam(String key) {
@@ -91,7 +85,4 @@ public class RequestPack {
         return oldMethod;
     }
 
-    public MockResult getMockResult() {
-        return mockResult;
-    }
 }
