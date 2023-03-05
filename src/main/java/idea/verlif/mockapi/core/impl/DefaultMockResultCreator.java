@@ -13,12 +13,13 @@ public class DefaultMockResultCreator implements MockResultCreator {
 
     @Override
     public Object mock(RequestPack pack, MockDataCreator creator) {
+        MethodGrc methodGrc;
         try {
-            MethodGrc methodGrc = ReflectUtil.getMethodGrc(pack.getOldMethod(), pack.getMethodHolder().getClass());
-            return creator.mock(methodGrc.getResult());
+            methodGrc = ReflectUtil.getMethodGrc(pack.getOldMethod(), pack.getMethodHolder().getClass());
         } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
+        return creator.mock(methodGrc.getResult());
     }
 
 }

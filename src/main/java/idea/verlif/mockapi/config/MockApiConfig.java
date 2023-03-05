@@ -32,11 +32,6 @@ public class MockApiConfig {
      */
     private Path paramsPath = new Path("params", POSITION.PREFIX);
 
-    /**
-     * 地址新增方式
-     */
-    private POSITION position = POSITION.PREFIX;
-
     private final MockDataCreator creator;
 
     public MockApiConfig(@Autowired(required = false) YamlDataPool yamlDataPool) {
@@ -76,14 +71,6 @@ public class MockApiConfig {
 
     public void setParamsPath(Path paramsPath) {
         this.paramsPath = paramsPath;
-    }
-
-    public POSITION getPosition() {
-        return position;
-    }
-
-    public void setPosition(POSITION position) {
-        this.position = position;
     }
 
     /**
