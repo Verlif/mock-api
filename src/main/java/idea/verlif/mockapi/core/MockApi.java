@@ -1,10 +1,14 @@
 package idea.verlif.mockapi.core;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import idea.verlif.mockapi.anno.MockParams;
 import idea.verlif.mockapi.anno.MockResult;
 import idea.verlif.mockapi.config.MockApiConfig;
 import idea.verlif.mockapi.core.creator.MockParamsCreator;
 import idea.verlif.mockapi.core.creator.MockResultCreator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -24,6 +28,8 @@ import java.util.Set;
 
 @Component
 public class MockApi implements InitializingBean {
+
+    private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Resource
     private RequestMappingHandlerMapping handlerMapping;
@@ -131,12 +137,14 @@ public class MockApi implements InitializingBean {
         private final MockParams mockParams;
 
         private Object object;
+        private final Class<?> controllerClass;
 
         public MockMethodHolder(Object methodHolder, Method oldMethod, MockResult mockResult, MockParams mockParams) {
             this.methodHolder = methodHolder;
             this.oldMethod = oldMethod;
             this.mockResult = mockResult;
             this.mockParams = mockParams;
+            this.controllerClass = oldMethod.getDeclaringClass();
         }
 
         @ResponseBody
@@ -168,6 +176,17 @@ public class MockApi implements InitializingBean {
                 o = mockObject.mock(pack, mockApiConfig.getMockDataCreator());
             } else {
                 o = object;
+            }
+            // 日志输出
+            if (mockResult.log()) {
+                Logger logger = LoggerFactory.getLogger(controllerClass);
+                String result;
+                try {
+                    result = OBJECT_MAPPER.writeValueAsString(o);
+                } catch (JsonProcessingException e) {
+                    result = o.toString();
+                }
+                logger.debug(request.getMethod() + " - " + request.getRequestURL() + " - " + result);
             }
             return o;
         }

@@ -22,6 +22,7 @@ public class UserController {
         return new OkResult<>(new User());
     }
 
+    @MockResult(log = false)
     @GetMapping("list")
     public BaseResult<List<User>> getList(UserQuery query) {
         return new OkResult<>(new ArrayList<>());

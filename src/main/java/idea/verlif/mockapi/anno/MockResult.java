@@ -11,4 +11,9 @@ public @interface MockResult {
      */
     boolean cacheable() default false;
 
+    /**
+     * 是否打印mock日志
+     */
+    boolean log() default true;
+
 }

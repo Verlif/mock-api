@@ -4,3 +4,7 @@ server:
 spring:
   profiles:
     active: datapool
+
+logging:
+  level:
+    idea.verlif.mockapi: DEBUG
