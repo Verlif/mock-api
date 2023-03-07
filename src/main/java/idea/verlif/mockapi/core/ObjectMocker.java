@@ -3,7 +3,7 @@ package idea.verlif.mockapi.core;
 import idea.verlif.mock.data.MockDataCreator;
 import idea.verlif.mock.data.config.MockDataConfig;
 
-public interface MockObject {
+public interface ObjectMocker {
 
     /**
      * 进行参数数据构造

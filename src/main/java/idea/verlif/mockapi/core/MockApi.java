@@ -2,6 +2,7 @@ package idea.verlif.mockapi.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import idea.verlif.mock.data.MockDataCreator;
 import idea.verlif.mock.data.config.MockDataConfig;
 import idea.verlif.mockapi.anno.MockParams;
 import idea.verlif.mockapi.anno.MockResult;
@@ -53,8 +54,8 @@ public class MockApi implements InitializingBean {
 
     public MockApi() throws NoSuchMethodException {
         builderConfiguration = new RequestMappingInfo.BuilderConfiguration();
-        resultMethod = MockMethodHolder.class.getMethod("mockResult", Map.class, Map.class, HttpServletRequest.class, HttpServletResponse.class);
-        paramsMethod = MockMethodHolder.class.getMethod("mockParams", Map.class, Map.class, HttpServletRequest.class, HttpServletResponse.class);
+        resultMethod = MockResultMethodHolder.class.getMethod("mockResult", Map.class, Map.class, HttpServletRequest.class, HttpServletResponse.class);
+        paramsMethod = MockParamsMethodHolder.class.getMethod("mockParams", Map.class, Map.class, HttpServletRequest.class, HttpServletResponse.class);
         configMap = new HashMap<>();
     }
 
@@ -75,15 +76,17 @@ public class MockApi implements InitializingBean {
             HandlerMethod handlerMethod = methodEntry.getValue();
             RequestMappingInfo mappingInfo = methodEntry.getKey();
             Method method = methodEntry.getValue().getMethod();
-            // 获取注解
+            // 结果mock
             MockResult result = getAnnotation(handlerMethod, MockResult.class);
-            MockParams params = getAnnotation(handlerMethod, MockParams.class);
-            MockMethodHolder mockMethodHolder = new MockMethodHolder(handlerMethod.getBean(), method, result, params);
             if (result != null) {
+                MockResultMethodHolder mockMethodHolder = new MockResultMethodHolder(handlerMethod.getBean(), method, result);
                 RequestMappingInfo extraInfo = buildRequestMappingInfo(mappingInfo, mockApiConfig.getResultPath());
                 handlerMapping.registerMapping(extraInfo, mockMethodHolder, resultMethod);
             }
+            // 入参mock
+            MockParams params = getAnnotation(handlerMethod, MockParams.class);
             if (params != null) {
+                MockParamsMethodHolder mockMethodHolder = new MockParamsMethodHolder(handlerMethod.getBean(), method, params);
                 RequestMappingInfo extraInfo = buildRequestMappingInfo(mappingInfo, mockApiConfig.getParamsPath());
                 handlerMapping.registerMapping(extraInfo, mockMethodHolder, paramsMethod);
             }
@@ -152,30 +155,60 @@ public class MockApi implements InitializingBean {
     /**
      * 构建方法数据类
      */
-    public final class MockMethodHolder {
+    public class MockMethodHolder<T extends Annotation> {
 
         private final Object methodHolder;
         private final Method oldMethod;
-        private final MockResult mockResult;
-        private final MockParams mockParams;
+        private final T annotation;
 
         /**
          * 数据缓存
          */
         private Object object;
-        private final Class<?> controllerClass;
 
-        public MockMethodHolder(Object methodHolder, Method oldMethod, MockResult mockResult, MockParams mockParams) {
+        public MockMethodHolder(Object methodHolder, Method oldMethod, T annotation) {
             this.methodHolder = methodHolder;
             this.oldMethod = oldMethod;
-            this.mockResult = mockResult;
-            this.mockParams = mockParams;
+            this.annotation = annotation;
+        }
+
+        public T getAnnotation() {
+            return annotation;
+        }
+
+        protected Object mockObjectWithCache(ObjectMocker objectMocker, RequestPack pack, MockDataConfig config, boolean cacheable) {
+            pack.setOldMethod(oldMethod);
+            pack.setMethodHolder(methodHolder);
+            Object o;
+            if (object == null) {
+                o = objectMocker.mock(pack, mockApiConfig.getMockDataCreator(), config);
+            } else {
+                o = object;
+            }
+            // 缓存数据
+            if (cacheable) {
+                object = o;
+            } else {
+                object = null;
+            }
+            return o;
+        }
+    }
+
+    public final class MockResultMethodHolder extends MockMethodHolder<MockResult> {
+
+        private final Class<?> controllerClass;
+
+        public MockResultMethodHolder(Object methodHolder, Method oldMethod, MockResult mockResult) {
+            super(methodHolder, oldMethod, mockResult);
             this.controllerClass = oldMethod.getDeclaringClass();
         }
 
         @ResponseBody
         public Object mockResult(Map<String, String> pathVar, Map<String, Object> param, HttpServletRequest request, HttpServletResponse response) {
-            Object o = mockObjectWithCache(mockResultCreator, pathVar, param, request, response, getMockConfig(mockResult.config()));
+            RequestPack pack = new RequestPack(pathVar, param, request, response);
+            MockResult mockResult = getAnnotation();
+            Object o = mockObjectWithCache(mockResultCreator, pack, getMockConfig(mockResult.config()), mockResult.cacheable());
             // 日志输出
             if (mockResult.log()) {
                 Logger logger = LoggerFactory.getLogger(controllerClass);
@@ -187,37 +220,22 @@ public class MockApi implements InitializingBean {
                 }
                 logger.debug(request.getMethod() + " - " + request.getRequestURL() + " - " + result);
             }
-            // 缓存数据
-            if (mockResult.cacheable()) {
-                object = o;
-            } else {
-                object = null;
-            }
             return o;
+        }
+
+    }
+
+    public final class MockParamsMethodHolder extends MockMethodHolder<MockParams> {
+
+        public MockParamsMethodHolder(Object methodHolder, Method oldMethod, MockParams annotation) {
+            super(methodHolder, oldMethod, annotation);
         }
 
         @ResponseBody
         public Object mockParams(Map<String, String> pathVar, Map<String, Object> param, HttpServletRequest request, HttpServletResponse response) {
-            Object o = mockObjectWithCache(mockParamsCreator, pathVar, param, request, response, getMockConfig(mockParams.config()));
-            // 缓存数据
-            if (mockParams.cacheable()) {
-                object = o;
-            } else {
-                object = null;
-            }
-            return o;
-        }
-
-        private Object mockObjectWithCache(MockObject mockObject, Map<String, String> pathVar, Map<String, Object> param, HttpServletRequest request, HttpServletResponse response, MockDataConfig config) {
-            Object o;
-            if (object == null) {
-                RequestPack pack = new RequestPack(pathVar, param, request, response, methodHolder, oldMethod);
-                o = mockObject.mock(pack, mockApiConfig.getMockDataCreator(), config);
-            } else {
-                o = object;
-            }
-            return o;
+            RequestPack pack = new RequestPack(pathVar, param, request, response);
+            MockParams mockParams = getAnnotation();
+            return mockObjectWithCache(mockParamsCreator, pack, getMockConfig(mockParams.config()), mockParams.cacheable());
         }
     }
-
 }

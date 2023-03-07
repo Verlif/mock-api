@@ -35,12 +35,20 @@ public class RequestPack {
     /**
      * 调用方法的所属对象
      */
-    private final Object methodHolder;
+    private Object methodHolder;
 
     /**
      * 原调用的方法对象
      */
-    private final Method oldMethod;
+    private Method oldMethod;
+
+    public RequestPack(Map<String, String> pathVars, Map<String, Object> params,
+                       HttpServletRequest request, HttpServletResponse response) {
+        this.pathVars = pathVars;
+        this.params = params;
+        this.request = request;
+        this.response = response;
+    }
 
     public RequestPack(Map<String, String> pathVars, Map<String, Object> params,
                        HttpServletRequest request, HttpServletResponse response,
@@ -85,4 +93,11 @@ public class RequestPack {
         return oldMethod;
     }
 
+    public void setMethodHolder(Object methodHolder) {
+        this.methodHolder = methodHolder;
+    }
+
+    public void setOldMethod(Method oldMethod) {
+        this.oldMethod = oldMethod;
+    }
 }
