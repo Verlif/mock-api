@@ -29,7 +29,7 @@ public class MockResultCreatorImpl implements MockResultCreator, InitializingBea
     @Override
     public Object mock(RequestPack pack, MockDataCreator creator, MockDataConfig config) {
         try {
-            MethodGrc methodGrc = ReflectUtil.getMethodGrc(pack.getOldMethod(), pack.getMethodHolder().getClass());
+            MethodGrc methodGrc = ReflectUtil.getMethodGrc(pack.getOldMethod(), pack.getHandlerMethod().getClass());
             return creator.mock(methodGrc.getResult(), config);
         } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
             throw new RuntimeException(e);

@@ -6,6 +6,7 @@ import idea.verlif.mockapi.global.domain.User;
 import idea.verlif.mockapi.global.domain.query.UserQuery;
 import idea.verlif.mockapi.global.result.BaseResult;
 import idea.verlif.mockapi.global.result.ext.OkResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class UserController {
 
     @MockResult(log = false, config = "b")
     @GetMapping("list")
-    public BaseResult<List<User>> getList(UserQuery query) {
+    public BaseResult<List<User>> getList(@Validated UserQuery query) {
         return new OkResult<>(new ArrayList<>());
     }
 

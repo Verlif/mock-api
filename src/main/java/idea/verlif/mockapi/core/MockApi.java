@@ -2,7 +2,6 @@ package idea.verlif.mockapi.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import idea.verlif.mock.data.MockDataCreator;
 import idea.verlif.mock.data.config.MockDataConfig;
 import idea.verlif.mockapi.anno.MockParams;
 import idea.verlif.mockapi.anno.MockResult;
@@ -76,17 +75,18 @@ public class MockApi implements InitializingBean {
             HandlerMethod handlerMethod = methodEntry.getValue();
             RequestMappingInfo mappingInfo = methodEntry.getKey();
             Method method = methodEntry.getValue().getMethod();
+
             // 结果mock
             MockResult result = getAnnotation(handlerMethod, MockResult.class);
             if (result != null) {
-                MockResultMethodHolder mockMethodHolder = new MockResultMethodHolder(handlerMethod.getBean(), method, result);
+                MockResultMethodHolder mockMethodHolder = new MockResultMethodHolder(handlerMethod, method, result);
                 RequestMappingInfo extraInfo = buildRequestMappingInfo(mappingInfo, mockApiConfig.getResultPath());
                 handlerMapping.registerMapping(extraInfo, mockMethodHolder, resultMethod);
             }
             // 入参mock
             MockParams params = getAnnotation(handlerMethod, MockParams.class);
             if (params != null) {
-                MockParamsMethodHolder mockMethodHolder = new MockParamsMethodHolder(handlerMethod.getBean(), method, params);
+                MockParamsMethodHolder mockMethodHolder = new MockParamsMethodHolder(handlerMethod, method, params);
                 RequestMappingInfo extraInfo = buildRequestMappingInfo(mappingInfo, mockApiConfig.getParamsPath());
                 handlerMapping.registerMapping(extraInfo, mockMethodHolder, paramsMethod);
             }
@@ -157,7 +157,7 @@ public class MockApi implements InitializingBean {
      */
     public class MockMethodHolder<T extends Annotation> {
 
-        private final Object methodHolder;
+        private final HandlerMethod methodHolder;
         private final Method oldMethod;
         private final T annotation;
 
@@ -166,8 +166,8 @@ public class MockApi implements InitializingBean {
          */
         private Object object;
 
-        public MockMethodHolder(Object methodHolder, Method oldMethod, T annotation) {
-            this.methodHolder = methodHolder;
+        public MockMethodHolder(HandlerMethod handlerMethod, Method oldMethod, T annotation) {
+            this.methodHolder = handlerMethod;
             this.oldMethod = oldMethod;
             this.annotation = annotation;
         }
@@ -178,7 +178,7 @@ public class MockApi implements InitializingBean {
 
         protected Object mockObjectWithCache(ObjectMocker objectMocker, RequestPack pack, MockDataConfig config, boolean cacheable) {
             pack.setOldMethod(oldMethod);
-            pack.setMethodHolder(methodHolder);
+            pack.setHandlerMethod(methodHolder);
             Object o;
             if (object == null) {
                 o = objectMocker.mock(pack, mockApiConfig.getMockDataCreator(), config);
@@ -199,8 +199,8 @@ public class MockApi implements InitializingBean {
 
         private final Class<?> controllerClass;
 
-        public MockResultMethodHolder(Object methodHolder, Method oldMethod, MockResult mockResult) {
-            super(methodHolder, oldMethod, mockResult);
+        public MockResultMethodHolder(HandlerMethod handlerMethod, Method oldMethod, MockResult mockResult) {
+            super(handlerMethod, oldMethod, mockResult);
             this.controllerClass = oldMethod.getDeclaringClass();
         }
 
@@ -227,8 +227,8 @@ public class MockApi implements InitializingBean {
 
     public final class MockParamsMethodHolder extends MockMethodHolder<MockParams> {
 
-        public MockParamsMethodHolder(Object methodHolder, Method oldMethod, MockParams annotation) {
-            super(methodHolder, oldMethod, annotation);
+        public MockParamsMethodHolder(HandlerMethod handlerMethod, Method oldMethod, MockParams annotation) {
+            super(handlerMethod, oldMethod, annotation);
         }
 
         @ResponseBody

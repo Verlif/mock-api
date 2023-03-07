@@ -15,6 +15,7 @@ public class HelloController {
         return str;
     }
 
+    @MockParams
     @MockResult
     @GetMapping("hi")
     public String hi() {
@@ -23,7 +24,7 @@ public class HelloController {
 
     @MockParams
     @GetMapping("test")
-    public String test(@RequestParam(name = "a") int a, User b, User c) {
+    public String test(@RequestParam(name = "aInt") int a, User b, User c) {
         return "";
     }
 }

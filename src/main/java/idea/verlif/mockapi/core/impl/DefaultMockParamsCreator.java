@@ -22,18 +22,14 @@ public class DefaultMockParamsCreator implements MockParamsCreator {
         MethodGrc methodGrc;
         ClassGrc[] arguments;
         try {
-            methodGrc = ReflectUtil.getMethodGrc(oldMethod, pack.getMethodHolder().getClass());
+            methodGrc = ReflectUtil.getMethodGrc(oldMethod, pack.getHandlerMethod().getClass());
             arguments = methodGrc.getArguments();
         } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
 
-        if (arguments.length == 0) {
-            return null;
-        } else if (arguments.length == 1) {
-            return creator.mock(arguments[0], config);
-        } else {
-            Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
+        if (arguments.length > 0) {
             Parameter[] parameters = oldMethod.getParameters();
             for (int i = 0; i < arguments.length; i++) {
                 ClassGrc argument = arguments[i];
@@ -47,17 +43,12 @@ public class DefaultMockParamsCreator implements MockParamsCreator {
                     } else if (param.value().length() > 0) {
                         name = param.value();
                     }
-                }
-                // 生成参数名称
-                if (name == null) {
-                    name = argument.getTarget().getName();
-                    if (map.containsKey(name)) {
-                        name += i;
-                    }
+                } else {
+                    name = parameter.getName();
                 }
                 map.put(name, creator.mock(argument));
             }
-            return map;
         }
+        return map;
     }
 }

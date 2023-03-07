@@ -1,6 +1,6 @@
 package idea.verlif.mockapi.core;
 
-import idea.verlif.mockapi.anno.MockResult;
+import org.springframework.web.method.HandlerMethod;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,7 +35,7 @@ public class RequestPack {
     /**
      * 调用方法的所属对象
      */
-    private Object methodHolder;
+    private HandlerMethod handlerMethod;
 
     /**
      * 原调用的方法对象
@@ -52,12 +52,12 @@ public class RequestPack {
 
     public RequestPack(Map<String, String> pathVars, Map<String, Object> params,
                        HttpServletRequest request, HttpServletResponse response,
-                       Object methodHolder, Method oldMethod) {
+                       HandlerMethod handlerMethod, Method oldMethod) {
         this.pathVars = pathVars;
         this.params = params;
         this.request = request;
         this.response = response;
-        this.methodHolder = methodHolder;
+        this.handlerMethod = handlerMethod;
         this.oldMethod = oldMethod;
     }
 
@@ -85,16 +85,16 @@ public class RequestPack {
         return response;
     }
 
-    public Object getMethodHolder() {
-        return methodHolder;
+    public HandlerMethod getHandlerMethod() {
+        return handlerMethod;
     }
 
     public Method getOldMethod() {
         return oldMethod;
     }
 
-    public void setMethodHolder(Object methodHolder) {
-        this.methodHolder = methodHolder;
+    public void setHandlerMethod(HandlerMethod handlerMethod) {
+        this.handlerMethod = handlerMethod;
     }
 
     public void setOldMethod(Method oldMethod) {
