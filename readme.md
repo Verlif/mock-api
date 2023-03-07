@@ -4,31 +4,57 @@
 
 ## 简单说明
 
-不需要前端使用**mock.js**，只需要在接口上配置一个注解，即可生成此接口的**mock接口**用于返回测试数据，例如：
+只需要在接口上配置一个注解，即可生成此接口的**mock接口**用于返回测试数据。
 
-```java
-@RestController
-@RequestMapping("hello")
-public class HelloController {
+**MockApi**目前支持入参数据构建与返回值数据构建，例如有一个接口
+`public BaseResult<List<User>> getList(UserQuery query)`，地址是`/list`。
+在添加了`@MockParams`后，可以通过访问`/params/list`地址返回以下数据：
 
-    @MockResult
-    @RequestMapping("echo/{str}")
-    public String echo(@PathVariable String str) {
-        return str;
-    }
-
-    @RequestMapping("hi")
-    public String hi() {
-        return "hi";
-    }
+```json
+{
+    "nickname": "小猪"
 }
 ```
 
-在`echo`接口上有`MockResult`注解，此时会产生一个新的接口`mock/hello/echo/{str}`用来返回测试数据而不必调用`echo`方法。
+这就是入参的`UserQuery`对象json。
 
-例如访问`/hello/echo/你好`会返回`你好`，而访问`/mock/hello/echo/你好`则会返回`fNh`这样的随机字符串。
+在添加了`@MockResult`后，可以通过访问`/mock/list`地址返回以下数据：
 
-下方的`hi`接口没有`MockResult`注解，并不会产生新接口，如果访问`/mock/hello/hi`，则会返回**404**错误。
+```json
+{
+    "code": 201,
+    "msg": "123",
+    "data": [
+        {
+            "userId": 681,
+            "nickname": "小羊",
+            "roleKey": "USER"
+        },
+        {
+            "userId": 416,
+            "nickname": "小羊",
+            "roleKey": "ADMIN"
+        },
+        {
+            "userId": 18,
+            "nickname": "小猫",
+            "roleKey": "ADMIN"
+        },
+        {
+            "userId": 147,
+            "nickname": "小明",
+            "roleKey": "USER"
+        },
+        {
+            "userId": 946,
+            "nickname": "小猫",
+            "roleKey": "VISITOR"
+        }
+    ]
+}
+```
+
+这就是`BaseResult<List<User>>`的数据。
 
 ## 配置文件
 
@@ -41,7 +67,8 @@ public class HelloController {
 ## 使用
 
 **！！！注意：目前的版本是可用性测试版本，仅适合学习和试验**
-**！！！注意：目前的版本基于SpringBoot 2.6.14版本开发，其他版本会在稳定后适配**
+
+**！！！注意：目前的版本基于SpringBoot2.6.14版本开发，理论上支持2.6.x，其他版本会在稳定后适配**
 
 1. 添加依赖
 
@@ -75,6 +102,7 @@ public class HelloController {
 4. 在需要**mock**的**controller类**上或是**接口方法**上添加`@MockResult`注解
 
    ```java
+   @MockParams
    @MockResult
    @RestController
    @RequestMapping("user")
@@ -104,4 +132,22 @@ public class HelloController {
    }
    ```
 
+5. 进行结果**mock**
+
+访问`127.0.0.1:8080/mock/user`，则调用`getById`的**mock**方法，并返回以下结果：
+
+```json
+{
+    "code": 201,
+    "msg": "nk-ww",
+    "data": {
+        "userId": 4,
+        "nickname": "小红",
+        "roleKey": "VISITOR"
+    }
+}
+```
+
 **完成**
+
+更多说明请参阅[使用说明](docs/使用说明.md)

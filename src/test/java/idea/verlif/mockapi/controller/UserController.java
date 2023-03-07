@@ -17,18 +17,19 @@ import java.util.List;
 @RequestMapping("user")
 public class UserController {
 
+    @MockResult(cacheable = true, config = "a")
     @GetMapping
     public BaseResult<User> getById(Integer id) {
         return new OkResult<>(new User());
     }
 
-    @MockResult(log = false)
+    @MockResult(log = false, config = "b")
     @GetMapping("list")
     public BaseResult<List<User>> getList(UserQuery query) {
         return new OkResult<>(new ArrayList<>());
     }
 
-    @MockResult(cacheable = true)
+    @MockParams(config = "a")
     @PutMapping
     public BaseResult<User> update(User user) {
         return new OkResult<>(user);

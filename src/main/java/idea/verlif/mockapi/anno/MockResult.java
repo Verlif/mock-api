@@ -16,4 +16,8 @@ public @interface MockResult {
      */
     boolean log() default true;
 
+    /**
+     * 配置名称
+     */
+    String config() default "";
 }

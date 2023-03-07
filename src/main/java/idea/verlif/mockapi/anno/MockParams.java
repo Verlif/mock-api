@@ -1,9 +1,6 @@
 package idea.verlif.mockapi.anno;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
@@ -14,4 +11,8 @@ public @interface MockParams {
      */
     boolean cacheable() default true;
 
+    /**
+     * 配置名称
+     */
+    String config() default "";
 }

@@ -1,6 +1,7 @@
 package idea.verlif.mockapi.mock;
 
 import idea.verlif.mock.data.MockDataCreator;
+import idea.verlif.mock.data.config.MockDataConfig;
 import idea.verlif.mock.data.creator.InstanceCreator;
 import idea.verlif.mock.data.creator.data.IntegerRandomCreator;
 import idea.verlif.mockapi.config.MockApiConfig;
@@ -26,10 +27,10 @@ public class MockResultCreatorImpl implements MockResultCreator, InitializingBea
     private MockApiConfig config;
 
     @Override
-    public Object mock(RequestPack pack, MockDataCreator creator) {
+    public Object mock(RequestPack pack, MockDataCreator creator, MockDataConfig config) {
         try {
             MethodGrc methodGrc = ReflectUtil.getMethodGrc(pack.getOldMethod(), pack.getMethodHolder().getClass());
-            return creator.mock(methodGrc.getResult());
+            return creator.mock(methodGrc.getResult(), config);
         } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
             throw new RuntimeException(e);
         }

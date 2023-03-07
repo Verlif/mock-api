@@ -3,13 +3,13 @@ package idea.verlif.mockapi.pool;
 import idea.verlif.mock.data.config.FieldDataPool;
 import idea.verlif.parser.ParamParserService;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import java.lang.reflect.Array;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Yaml数据加载池
@@ -57,7 +57,7 @@ public class YamlDataPool extends FieldDataPool implements InitializingBean {
                     if (name.length() == 0) {
                         continue;
                     }
-                    pv.values(parseValues(dataInfo.getValues(), target), name.trim());
+                    pv.values(parseValues(dataInfo.getValues(), target), name.trim(), Pattern.CASE_INSENSITIVE);
                 }
                 addPatternValues(target, pv);
             }

@@ -1,6 +1,7 @@
 package idea.verlif.mockapi.core.impl;
 
 import idea.verlif.mock.data.MockDataCreator;
+import idea.verlif.mock.data.config.MockDataConfig;
 import idea.verlif.mockapi.core.RequestPack;
 import idea.verlif.mockapi.core.creator.MockParamsCreator;
 import idea.verlif.reflection.domain.ClassGrc;
@@ -16,7 +17,7 @@ import java.util.Map;
 public class DefaultMockParamsCreator implements MockParamsCreator {
 
     @Override
-    public Object mock(RequestPack pack, MockDataCreator creator) {
+    public Object mock(RequestPack pack, MockDataCreator creator, MockDataConfig config) {
         Method oldMethod = pack.getOldMethod();
         MethodGrc methodGrc;
         ClassGrc[] arguments;
@@ -30,7 +31,7 @@ public class DefaultMockParamsCreator implements MockParamsCreator {
         if (arguments.length == 0) {
             return null;
         } else if (arguments.length == 1) {
-            return creator.mock(arguments[0]);
+            return creator.mock(arguments[0], config);
         } else {
             Map<String, Object> map = new HashMap<>();
             Parameter[] parameters = oldMethod.getParameters();
