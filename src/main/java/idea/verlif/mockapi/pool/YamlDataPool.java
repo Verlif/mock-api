@@ -3,6 +3,7 @@ package idea.verlif.mockapi.pool;
 import idea.verlif.mock.data.config.FieldDataPool;
 import idea.verlif.parser.ParamParserService;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -21,14 +22,10 @@ public class YamlDataPool extends FieldDataPool implements InitializingBean {
 
     private List<DataInfo> pool;
 
-    private final ParamParserService paramParserService;
+    @Autowired
+    private ParamParserService paramParserService;
 
     public YamlDataPool() {
-        this.paramParserService = new ParamParserService();
-    }
-
-    public ParamParserService getParamParserService() {
-        return paramParserService;
     }
 
     public List<DataInfo> getPool() {

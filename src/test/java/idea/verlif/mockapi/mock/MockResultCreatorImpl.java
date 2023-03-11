@@ -26,6 +26,9 @@ public class MockResultCreatorImpl implements MockResultCreator, InitializingBea
     @Autowired
     private MockApiConfig config;
 
+    @Autowired
+    private MockDataCreator creator;
+
     @Override
     public Object mock(RequestPack pack, MockDataCreator creator, MockDataConfig config) {
         try {
@@ -38,8 +41,7 @@ public class MockResultCreatorImpl implements MockResultCreator, InitializingBea
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        config.getMockDataCreator()
-                .fieldValue(User::getUserId, new IntegerRandomCreator(0, 1000))
+        creator.fieldValue(User::getUserId, new IntegerRandomCreator(0, 1000))
                 // 对返回结果对象进行随机化
                 .instanceCreator(new InstanceCreator<BaseResult<?>>() {
 
@@ -57,7 +59,7 @@ public class MockResultCreatorImpl implements MockResultCreator, InitializingBea
                         } else return new FailResult<>(ResultCode.FAILURE.getMsg(), "");
                     }
                 });
-        config.getMockDataCreator().getConfig()
+        creator.getConfig()
                 .arraySize(10);
     }
 }

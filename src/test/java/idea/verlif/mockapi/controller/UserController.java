@@ -18,7 +18,7 @@ import java.util.List;
 @RequestMapping("user")
 public class UserController {
 
-    @MockResult(cacheable = true, config = "a")
+    @MockResult(cacheable = true, config = "a", result = "1", resultType = Double.class)
     @GetMapping
     public BaseResult<User> getById(Integer id) {
         return new OkResult<>(new User());

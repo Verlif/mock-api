@@ -2,15 +2,18 @@ package idea.verlif.mockapi.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import idea.verlif.mock.data.MockDataCreator;
 import idea.verlif.mock.data.config.MockDataConfig;
 import idea.verlif.mockapi.anno.MockParams;
 import idea.verlif.mockapi.anno.MockResult;
 import idea.verlif.mockapi.config.MockApiConfig;
 import idea.verlif.mockapi.core.creator.MockParamsCreator;
 import idea.verlif.mockapi.core.creator.MockResultCreator;
+import idea.verlif.parser.ParamParserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -19,7 +22,6 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.annotation.Annotation;
@@ -31,20 +33,26 @@ public class MockApi implements InitializingBean {
 
     private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    @Resource
+    @Autowired
     private ApplicationContext applicationContext;
 
-    @Resource
+    @Autowired
     private RequestMappingHandlerMapping handlerMapping;
 
-    @Resource
+    @Autowired
     private MockApiConfig mockApiConfig;
 
-    @Resource
+    @Autowired
+    private MockDataCreator creator;
+
+    @Autowired
     private MockResultCreator mockResultCreator;
 
-    @Resource
+    @Autowired
     private MockParamsCreator mockParamsCreator;
+
+    @Autowired
+    private ParamParserService paramParserService;
 
     private final RequestMappingInfo.BuilderConfiguration builderConfiguration;
     private final Method resultMethod;
@@ -63,7 +71,7 @@ public class MockApi implements InitializingBean {
     }
 
     public MockDataConfig getMockConfig(String name) {
-        return configMap.getOrDefault(name, mockApiConfig.getMockDataCreator().getConfig());
+        return configMap.getOrDefault(name, creator.getConfig());
     }
 
     /**
@@ -181,7 +189,7 @@ public class MockApi implements InitializingBean {
             pack.setHandlerMethod(methodHolder);
             Object o;
             if (object == null) {
-                o = objectMocker.mock(pack, mockApiConfig.getMockDataCreator(), config);
+                o = objectMocker.mock(pack, creator, config);
             } else {
                 o = object;
             }
@@ -193,6 +201,7 @@ public class MockApi implements InitializingBean {
             }
             return o;
         }
+
     }
 
     public final class MockResultMethodHolder extends MockMethodHolder<MockResult> {
@@ -208,6 +217,9 @@ public class MockApi implements InitializingBean {
         public Object mockResult(Map<String, String> pathVar, Map<String, Object> param, HttpServletRequest request, HttpServletResponse response) {
             RequestPack pack = new RequestPack(pathVar, param, request, response);
             MockResult mockResult = getAnnotation();
+            if (mockResult.result().length() > 0) {
+                return paramParserService.parse(mockResult.resultType(), mockResult.result());
+            }
             Object o = mockObjectWithCache(mockResultCreator, pack, getMockConfig(mockResult.config()), mockResult.cacheable());
             // 日志输出
             if (mockResult.log()) {

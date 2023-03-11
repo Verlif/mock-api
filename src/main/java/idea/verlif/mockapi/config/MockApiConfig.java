@@ -7,6 +7,7 @@ import idea.verlif.mockapi.core.creator.MockResultCreator;
 import idea.verlif.mockapi.core.impl.DefaultMockParamsCreator;
 import idea.verlif.mockapi.core.impl.DefaultMockResultCreator;
 import idea.verlif.mockapi.pool.YamlDataPool;
+import idea.verlif.parser.ParamParserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -32,16 +33,20 @@ public class MockApiConfig {
      */
     private Path paramsPath = new Path("params", POSITION.PREFIX);
 
-    private final MockDataCreator creator;
+    private final ParamParserService parserService;
 
-    public MockApiConfig(@Autowired(required = false) YamlDataPool yamlDataPool) {
-        creator = new MockDataCreator();
-        creator.fieldDataPool(yamlDataPool);
-        creator.getConfig()
-                .autoCascade(true);
+    public MockApiConfig() {
+        parserService = new ParamParserService();
     }
 
-    public MockDataCreator getMockDataCreator() {
+    @Bean
+    public MockDataCreator getMockDataCreator(@Autowired(required = false) YamlDataPool yamlDataPool) {
+        MockDataCreator creator = new MockDataCreator();
+        if (yamlDataPool != null) {
+            creator.fieldDataPool(yamlDataPool);
+        }
+        creator.getConfig()
+                .autoCascade(true);
         return creator;
     }
 
@@ -55,6 +60,12 @@ public class MockApiConfig {
     @ConditionalOnMissingBean(MockParamsCreator.class)
     public MockParamsCreator getMockParamsCreator() {
         return new DefaultMockParamsCreator();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ParamParserService.class)
+    public ParamParserService getParamParserService() {
+        return parserService;
     }
 
     public Path getResultPath() {

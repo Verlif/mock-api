@@ -20,4 +20,14 @@ public @interface MockResult {
      * 配置名称
      */
     String config() default "";
+
+    /**
+     * 直返数据，不进行mock，直接返回参数值
+     */
+    String result() default "";
+
+    /**
+     * 直返数据的类型
+     */
+    Class<?> resultType() default String.class;
 }
