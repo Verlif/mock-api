@@ -12,6 +12,7 @@ import idea.verlif.mockapi.core.creator.MockResultCreator;
 import idea.verlif.parser.ParamParserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springdoc.api.AbstractOpenApiResource;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -156,6 +157,9 @@ public class MockApi implements InitializingBean {
             builderConfiguration.setPathMatcher(handlerMapping.getPathMatcher());
         }
 
+        // 向OpenApi中添加额外的类
+        AbstractOpenApiResource.addRestControllers(MockParamsMethodHolder.class);
+        AbstractOpenApiResource.addRestControllers(MockResultMethodHolder.class);
         collectMockConfig();
         register();
     }
