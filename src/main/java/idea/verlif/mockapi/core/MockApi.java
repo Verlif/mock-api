@@ -7,6 +7,7 @@ import idea.verlif.mock.data.config.MockDataConfig;
 import idea.verlif.mockapi.anno.MockParams;
 import idea.verlif.mockapi.anno.MockResult;
 import idea.verlif.mockapi.config.MockApiConfig;
+import idea.verlif.mockapi.config.OpenApiRegister;
 import idea.verlif.mockapi.core.creator.MockParamsCreator;
 import idea.verlif.mockapi.core.creator.MockResultCreator;
 import idea.verlif.parser.ParamParserService;
@@ -51,6 +52,9 @@ public class MockApi implements InitializingBean {
 
     @Autowired
     private MockParamsCreator mockParamsCreator;
+
+    @Autowired(required = false)
+    private OpenApiRegister openApiRegister;
 
     @Autowired
     private ParamParserService paramParserService;
@@ -158,8 +162,10 @@ public class MockApi implements InitializingBean {
         }
 
         // 向OpenApi中添加额外的类
-        AbstractOpenApiResource.addRestControllers(MockParamsMethodHolder.class);
-        AbstractOpenApiResource.addRestControllers(MockResultMethodHolder.class);
+        if (openApiRegister != null) {
+            AbstractOpenApiResource.addRestControllers(MockParamsMethodHolder.class);
+            AbstractOpenApiResource.addRestControllers(MockResultMethodHolder.class);
+        }
         collectMockConfig();
         register();
     }

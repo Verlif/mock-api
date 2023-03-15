@@ -1,25 +1,13 @@
 package idea.verlif.mockapi.config;
 
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.models.media.StringSchema;
-import io.swagger.v3.oas.models.parameters.Parameter;
 import org.springdoc.core.GroupedOpenApi;
-import org.springdoc.core.SpringDocProviders;
-import org.springdoc.core.customizers.OperationCustomizer;
-import org.springdoc.core.fn.RouterOperation;
-import org.springdoc.core.providers.RepositoryRestResourceProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
-import org.springframework.web.method.HandlerMethod;
+import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-@Component
+@Configuration
+@ConditionalOnProperty(prefix = "mockapi.swagger", value = "enabled", matchIfMissing = true)
 public class OpenApiRegister {
 
     @Autowired
