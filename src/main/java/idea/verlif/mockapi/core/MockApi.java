@@ -6,10 +6,8 @@ import idea.verlif.mock.data.MockDataCreator;
 import idea.verlif.mock.data.config.MockDataConfig;
 import idea.verlif.mockapi.anno.MockParams;
 import idea.verlif.mockapi.anno.MockResult;
-import idea.verlif.mockapi.config.MockApiConfig;
 import idea.verlif.mockapi.config.OpenApiRegister;
-import idea.verlif.mockapi.core.creator.MockParamsCreator;
-import idea.verlif.mockapi.core.creator.MockResultCreator;
+import idea.verlif.mockapi.core.creator.*;
 import idea.verlif.parser.ParamParserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,25 +35,20 @@ public class MockApi implements InitializingBean {
 
     @Autowired
     private ApplicationContext applicationContext;
-
     @Autowired
-    private RequestMappingHandlerMapping handlerMapping;
-
+    private RequestMappingHandlerMapping requestMappingHandlerMapping;
     @Autowired
-    private MockApiConfig mockApiConfig;
-
+    private MockResultPathGenerator resultPathGenerator;
+    @Autowired
+    private MockParamsPathGenerator paramsPathGenerator;
     @Autowired
     private MockDataCreator creator;
-
     @Autowired
     private MockResultCreator mockResultCreator;
-
     @Autowired
     private MockParamsCreator mockParamsCreator;
-
     @Autowired(required = false)
     private OpenApiRegister openApiRegister;
-
     @Autowired
     private ParamParserService paramParserService;
 
@@ -83,7 +76,7 @@ public class MockApi implements InitializingBean {
      * 注册新的请求处理
      */
     public void register() {
-        Map<RequestMappingInfo, HandlerMethod> handlerMethods = handlerMapping.getHandlerMethods();
+        Map<RequestMappingInfo, HandlerMethod> handlerMethods = requestMappingHandlerMapping.getHandlerMethods();
         for (Map.Entry<RequestMappingInfo, HandlerMethod> methodEntry : handlerMethods.entrySet()) {
             HandlerMethod handlerMethod = methodEntry.getValue();
             RequestMappingInfo mappingInfo = methodEntry.getKey();
@@ -93,15 +86,15 @@ public class MockApi implements InitializingBean {
             MockResult result = getAnnotation(handlerMethod, MockResult.class);
             if (result != null) {
                 MockResultMethodHolder mockMethodHolder = new MockResultMethodHolder(handlerMethod, method, result);
-                RequestMappingInfo extraInfo = buildRequestMappingInfo(mappingInfo, mockApiConfig.getResultPath());
-                handlerMapping.registerMapping(extraInfo, mockMethodHolder, resultMethod);
+                RequestMappingInfo extraInfo = buildResultRequestMappingInfo(mappingInfo);
+                requestMappingHandlerMapping.registerMapping(extraInfo, mockMethodHolder, resultMethod);
             }
             // 入参mock
             MockParams params = getAnnotation(handlerMethod, MockParams.class);
             if (params != null) {
                 MockParamsMethodHolder mockMethodHolder = new MockParamsMethodHolder(handlerMethod, method, params);
-                RequestMappingInfo extraInfo = buildRequestMappingInfo(mappingInfo, mockApiConfig.getParamsPath());
-                handlerMapping.registerMapping(extraInfo, mockMethodHolder, paramsMethod);
+                RequestMappingInfo extraInfo = buildParamsRequestMappingInfo(mappingInfo);
+                requestMappingHandlerMapping.registerMapping(extraInfo, mockMethodHolder, paramsMethod);
             }
         }
     }
@@ -121,28 +114,39 @@ public class MockApi implements InitializingBean {
         return result;
     }
 
+    private RequestMappingInfo buildParamsRequestMappingInfo(RequestMappingInfo source) {
+        // 构造调用地址
+        Set<String> pathSets = pathSets(source.getPatternValues(), paramsPathGenerator);
+        openApiRegister.addParamsPaths(pathSets);
+        return buildRequestMappingInfo(source, pathSets);
+    }
+
+    private RequestMappingInfo buildResultRequestMappingInfo(RequestMappingInfo source) {
+        // 构造调用地址
+        Set<String> pathSets = pathSets(source.getPatternValues(), resultPathGenerator);
+        openApiRegister.addResultPaths(pathSets);
+        return buildRequestMappingInfo(source, pathSets);
+    }
+
+    private Set<String> pathSets(Set<String> source, PathGenerator generator) {
+        Set<String> pathSets = new HashSet<>();
+        for (String value : source) {
+            pathSets.add(generator.urlGenerate(value));
+        }
+        return pathSets;
+    }
+
     /**
      * 构建新的请求处理信息
      *
      * @param source 源请求处理信息
-     * @param path   附加地址信息
      */
-    private RequestMappingInfo buildRequestMappingInfo(RequestMappingInfo source, MockApiConfig.Path path) {
-        // 构造调用地址
-        Set<String> pathSets = new HashSet<>();
-        Set<String> patternValues = source.getPatternValues();
-        for (String value : patternValues) {
-            if (path.getPosition() == MockApiConfig.POSITION.PREFIX) {
-                pathSets.add(path.getValue() + value);
-            } else {
-                pathSets.add(value + "/" + path.getValue());
-            }
-        }
+    private RequestMappingInfo buildRequestMappingInfo(RequestMappingInfo source, Set<String> pathSets) {
         // 获取调用方法
         Set<RequestMethod> set = source.getMethodsCondition().getMethods();
         Set<RequestMethod> newSet = new HashSet<>(set);
         // 填充方法
-        if (newSet.size() == 0) {
+        if (newSet.isEmpty()) {
             newSet.addAll(Arrays.asList(RequestMethod.values()));
         }
         return RequestMappingInfo.paths(pathSets.toArray(new String[0]))
@@ -152,13 +156,13 @@ public class MockApi implements InitializingBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
-        builderConfiguration.setTrailingSlashMatch(handlerMapping.useTrailingSlashMatch());
-        builderConfiguration.setContentNegotiationManager(handlerMapping.getContentNegotiationManager());
-        if (handlerMapping.getPatternParser() != null) {
-            builderConfiguration.setPatternParser(handlerMapping.getPatternParser());
+    public void afterPropertiesSet() {
+        builderConfiguration.setTrailingSlashMatch(requestMappingHandlerMapping.useTrailingSlashMatch());
+        builderConfiguration.setContentNegotiationManager(requestMappingHandlerMapping.getContentNegotiationManager());
+        if (requestMappingHandlerMapping.getPatternParser() != null) {
+            builderConfiguration.setPatternParser(requestMappingHandlerMapping.getPatternParser());
         } else {
-            builderConfiguration.setPathMatcher(handlerMapping.getPathMatcher());
+            builderConfiguration.setPathMatcher(requestMappingHandlerMapping.getPathMatcher());
         }
 
         // 向OpenApi中添加额外的类
@@ -227,7 +231,7 @@ public class MockApi implements InitializingBean {
         public Object mockResult(Map<String, String> pathVar, Map<String, Object> param, HttpServletRequest request, HttpServletResponse response) {
             RequestPack pack = new RequestPack(pathVar, param, request, response);
             MockResult mockResult = getAnnotation();
-            if (mockResult.result().length() > 0) {
+            if (!mockResult.result().isEmpty()) {
                 return paramParserService.parse(mockResult.resultType(), mockResult.result());
             }
             Object o = mockObjectWithCache(mockResultCreator, pack, getMockConfig(mockResult.config()), mockResult.cacheable());

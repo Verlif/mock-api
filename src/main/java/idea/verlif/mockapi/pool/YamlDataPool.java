@@ -22,10 +22,10 @@ public class YamlDataPool extends FieldDataPool implements InitializingBean {
 
     private List<DataInfo> pool;
 
-    @Autowired
-    private ParamParserService paramParserService;
+    private final ParamParserService paramParserService;
 
-    public YamlDataPool() {
+    public YamlDataPool(@Autowired ParamParserService paramParserService) {
+        this.paramParserService = paramParserService;
     }
 
     public List<DataInfo> getPool() {

@@ -3,9 +3,13 @@ package idea.verlif.mockapi.config;
 import idea.verlif.mock.data.MockDataCreator;
 import idea.verlif.mockapi.core.MockApi;
 import idea.verlif.mockapi.core.creator.MockParamsCreator;
+import idea.verlif.mockapi.core.creator.MockParamsPathGenerator;
 import idea.verlif.mockapi.core.creator.MockResultCreator;
+import idea.verlif.mockapi.core.creator.MockResultPathGenerator;
 import idea.verlif.mockapi.core.impl.DefaultMockParamsCreator;
+import idea.verlif.mockapi.core.impl.DefaultMockParamsPathGenerator;
 import idea.verlif.mockapi.core.impl.DefaultMockResultCreator;
+import idea.verlif.mockapi.core.impl.DefaultMockResultPathGenerator;
 import idea.verlif.mockapi.pool.YamlDataPool;
 import idea.verlif.parser.ParamParserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,22 +27,6 @@ import org.springframework.context.annotation.Import;
 @Import({MockApi.class, YamlDataPool.class})
 public class MockApiConfig {
 
-    /**
-     * 结果地址
-     */
-    private Path resultPath = new Path("mock", POSITION.PREFIX);
-
-    /**
-     * 参数地址
-     */
-    private Path paramsPath = new Path("params", POSITION.PREFIX);
-
-    private final ParamParserService parserService;
-
-    public MockApiConfig() {
-        parserService = new ParamParserService();
-    }
-
     @Bean
     public MockDataCreator getMockDataCreator(@Autowired(required = false) YamlDataPool yamlDataPool) {
         MockDataCreator creator = new MockDataCreator();
@@ -50,89 +38,49 @@ public class MockApiConfig {
         return creator;
     }
 
+    /**
+     * 结果数据生成器
+     */
     @Bean
     @ConditionalOnMissingBean(MockResultCreator.class)
-    public MockResultCreator getMockResultCreator() {
+    public MockResultCreator mockResultCreator() {
         return new DefaultMockResultCreator();
     }
 
+    /**
+     * 入参数据生成器
+     */
     @Bean
     @ConditionalOnMissingBean(MockParamsCreator.class)
-    public MockParamsCreator getMockParamsCreator() {
+    public MockParamsCreator mockParamsCreator() {
         return new DefaultMockParamsCreator();
     }
 
+    /**
+     * 参数解析服务器
+     */
     @Bean
     @ConditionalOnMissingBean(ParamParserService.class)
-    public ParamParserService getParamParserService() {
-        return parserService;
-    }
-
-    public Path getResultPath() {
-        return resultPath;
-    }
-
-    public void setResultPath(Path resultPath) {
-        this.resultPath = resultPath;
-    }
-
-    public Path getParamsPath() {
-        return paramsPath;
-    }
-
-    public void setParamsPath(Path paramsPath) {
-        this.paramsPath = paramsPath;
+    public ParamParserService paramParserService() {
+        return new ParamParserService();
     }
 
     /**
-     * 路径地址
+     * 入参数据接口地址生成器
      */
-    public static final class Path {
-
-        private String value;
-
-        private POSITION position;
-
-        public Path() {
-        }
-
-        public Path(String value, POSITION position) {
-            this.value = value;
-            this.position = position;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public void setValue(String value) {
-            this.value = value;
-        }
-
-        public POSITION getPosition() {
-            return position;
-        }
-
-        public void setPosition(String position) {
-            this.position = POSITION.valueOf(position);
-        }
-
-        public void setPosition(POSITION position) {
-            this.position = position;
-        }
+    @Bean
+    @ConditionalOnMissingBean(MockParamsPathGenerator.class)
+    public MockParamsPathGenerator mockParamsPathGenerator() {
+        return new DefaultMockParamsPathGenerator();
     }
 
-    public enum POSITION {
-
-        /**
-         * 前缀方式
-         */
-        PREFIX,
-
-        /**
-         * 后缀方式
-         */
-        SUFFIX,
-        ;
+    /**
+     * 结果数据接口地址生成器
+     */
+    @Bean
+    @ConditionalOnMissingBean(MockResultPathGenerator.class)
+    public MockResultPathGenerator mockResultPathGenerator() {
+        return new DefaultMockResultPathGenerator();
     }
+
 }
