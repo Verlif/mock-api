@@ -13,6 +13,7 @@ import idea.verlif.mockapi.global.result.ResultCode;
 import idea.verlif.mockapi.global.result.ext.FailResult;
 import idea.verlif.mockapi.global.result.ext.OkResult;
 import idea.verlif.reflection.domain.MethodGrc;
+import idea.verlif.reflection.util.MethodUtil;
 import idea.verlif.reflection.util.ReflectUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class MockResultCreatorImpl implements MockResultCreator, InitializingBea
     @Override
     public Object mock(RequestPack pack, MockDataCreator creator, MockDataConfig config) {
         try {
-            MethodGrc methodGrc = ReflectUtil.getMethodGrc(pack.getOldMethod(), pack.getHandlerMethod().getClass());
+            MethodGrc methodGrc = MethodUtil.getMethodGrc(pack.getOldMethod(), pack.getHandlerMethod().getClass());
             return creator.mock(methodGrc.getResult(), config);
         } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
             throw new RuntimeException(e);

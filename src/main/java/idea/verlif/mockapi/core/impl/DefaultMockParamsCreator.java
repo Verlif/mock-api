@@ -6,6 +6,7 @@ import idea.verlif.mockapi.core.RequestPack;
 import idea.verlif.mockapi.core.creator.MockParamsCreator;
 import idea.verlif.reflection.domain.ClassGrc;
 import idea.verlif.reflection.domain.MethodGrc;
+import idea.verlif.reflection.util.MethodUtil;
 import idea.verlif.reflection.util.ReflectUtil;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -22,7 +23,7 @@ public class DefaultMockParamsCreator implements MockParamsCreator {
         MethodGrc methodGrc;
         ClassGrc[] arguments;
         try {
-            methodGrc = ReflectUtil.getMethodGrc(oldMethod, pack.getHandlerMethod().getClass());
+            methodGrc = MethodUtil.getMethodGrc(oldMethod, pack.getHandlerMethod().getClass());
             arguments = methodGrc.getArguments();
         } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
             throw new RuntimeException(e);
