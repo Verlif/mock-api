@@ -59,8 +59,6 @@ public BaseResult<User> getById(Integer id) {
 }
 ```
 
-`MockApi`使用了**springdoc-openapi-ui**，因此你可以在[swagger-ui](http://127.0.0.1:8888/swagger-ui/index.html)页面上通过**mock**与**params**分组查看不同的模拟接口。
-
 ## 配置文件
 
 配置文件说明请参考 [配置文件](docs/配置文件.md)

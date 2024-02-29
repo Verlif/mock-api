@@ -54,7 +54,7 @@ public class MockResultCreatorImpl implements MockResultCreator, InitializingBea
                     }
 
                     @Override
-                    public BaseResult<?> newInstance() {
+                    public BaseResult<?> newInstance(MockDataCreator mockDataCreator) {
                         if (random.nextInt(10) > 1) {
                             return new OkResult<>();
                         } else return new FailResult<>(ResultCode.FAILURE.getMsg(), "");

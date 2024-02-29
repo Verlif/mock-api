@@ -6,12 +6,13 @@ import idea.verlif.mock.data.MockDataCreator;
 import idea.verlif.mock.data.config.MockDataConfig;
 import idea.verlif.mockapi.anno.MockParams;
 import idea.verlif.mockapi.anno.MockResult;
-import idea.verlif.mockapi.config.OpenApiRegister;
-import idea.verlif.mockapi.core.creator.*;
+import idea.verlif.mockapi.core.creator.MockParamsPathGenerator;
+import idea.verlif.mockapi.core.creator.MockResultCreator;
+import idea.verlif.mockapi.core.creator.MockResultPathGenerator;
+import idea.verlif.mockapi.core.creator.PathGenerator;
 import idea.verlif.parser.ParamParserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springdoc.api.AbstractOpenApiResource;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -45,10 +46,6 @@ public class MockApi implements InitializingBean {
     private MockDataCreator creator;
     @Autowired
     private MockResultCreator mockResultCreator;
-    @Autowired
-    private MockParamsCreator mockParamsCreator;
-    @Autowired(required = false)
-    private OpenApiRegister openApiRegister;
     @Autowired
     private ParamParserService paramParserService;
 
@@ -117,14 +114,12 @@ public class MockApi implements InitializingBean {
     private RequestMappingInfo buildParamsRequestMappingInfo(RequestMappingInfo source) {
         // 构造调用地址
         Set<String> pathSets = pathSets(source.getPatternValues(), paramsPathGenerator);
-        openApiRegister.addParamsPaths(pathSets);
         return buildRequestMappingInfo(source, pathSets);
     }
 
     private RequestMappingInfo buildResultRequestMappingInfo(RequestMappingInfo source) {
         // 构造调用地址
         Set<String> pathSets = pathSets(source.getPatternValues(), resultPathGenerator);
-        openApiRegister.addResultPaths(pathSets);
         return buildRequestMappingInfo(source, pathSets);
     }
 
@@ -163,12 +158,6 @@ public class MockApi implements InitializingBean {
             builderConfiguration.setPatternParser(requestMappingHandlerMapping.getPatternParser());
         } else {
             builderConfiguration.setPathMatcher(requestMappingHandlerMapping.getPathMatcher());
-        }
-
-        // 向OpenApi中添加额外的类
-        if (openApiRegister != null) {
-            AbstractOpenApiResource.addRestControllers(MockParamsMethodHolder.class);
-            AbstractOpenApiResource.addRestControllers(MockResultMethodHolder.class);
         }
         collectMockConfig();
         register();
