@@ -9,15 +9,12 @@ import idea.verlif.mockapi.anno.MockResult;
 import idea.verlif.mockapi.config.OpenApiRegister;
 import idea.verlif.mockapi.core.creator.*;
 import idea.verlif.parser.ParamParserService;
-import idea.verlif.reflection.util.FieldUtil;
-import idea.verlif.reflection.util.MethodUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springdoc.api.AbstractOpenApiResource;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -28,10 +25,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.*;
 
 @Component
@@ -185,9 +179,10 @@ public class MockApi implements InitializingBean {
      */
     public class MockMethodHolder<T extends Annotation> {
 
-        private final HandlerMethod methodHolder;
-        private final Method oldMethod;
-        private final T annotation;
+        protected final HandlerMethod methodHolder;
+        protected final Method oldMethod;
+        protected final T annotation;
+        protected final Class<?> controllerClass;
 
         /**
          * 数据缓存
@@ -198,10 +193,30 @@ public class MockApi implements InitializingBean {
             this.methodHolder = handlerMethod;
             this.oldMethod = oldMethod;
             this.annotation = annotation;
+            this.controllerClass = oldMethod.getDeclaringClass();
         }
 
         public T getAnnotation() {
             return annotation;
+        }
+
+        protected Object mockObject(MockItem mockItem, RequestPack pack) {
+            if (!mockItem.getResult().isEmpty()) {
+                return paramParserService.parse(mockItem.getResultType(), mockItem.getResult());
+            }
+            Object o = mockObjectWithCache(mockResultCreator, pack, getMockConfig(mockItem.getConfig()), mockItem.isCacheable());
+            // 日志输出
+            if (mockItem.isLog()) {
+                Logger logger = LoggerFactory.getLogger(controllerClass);
+                String result;
+                try {
+                    result = OBJECT_MAPPER.writeValueAsString(o);
+                } catch (JsonProcessingException e) {
+                    result = o.toString();
+                }
+                logger.debug(pack.getRequest().getMethod() + " - " + pack.getRequest().getRequestURL() + " - " + result);
+            }
+            return o;
         }
 
         protected Object mockObjectWithCache(ObjectMocker objectMocker, RequestPack pack, MockDataConfig config, boolean cacheable) {
@@ -222,37 +237,95 @@ public class MockApi implements InitializingBean {
             return o;
         }
 
+        public class MockItem {
+
+            /**
+             * 使用缓存。在第一次构建后，后续请求会直接返回第一次构建的数据。
+             */
+            private boolean cacheable;
+
+            /**
+             * 是否打印mock日志
+             */
+            private boolean log;
+
+            /**
+             * 配置名称
+             */
+            private String config;
+
+            /**
+             * 直返数据，不进行mock，直接返回参数值
+             */
+            private String result;
+
+            /**
+             * 直返数据的类型
+             */
+            private Class<?> resultType;
+
+            public MockItem(boolean cacheable, boolean log, String config, String result, Class<?> resultType) {
+                this.cacheable = cacheable;
+                this.log = log;
+                this.config = config;
+                this.result = result;
+                this.resultType = resultType;
+            }
+
+            public boolean isCacheable() {
+                return cacheable;
+            }
+
+            public void setCacheable(boolean cacheable) {
+                this.cacheable = cacheable;
+            }
+
+            public boolean isLog() {
+                return log;
+            }
+
+            public void setLog(boolean log) {
+                this.log = log;
+            }
+
+            public String getConfig() {
+                return config;
+            }
+
+            public void setConfig(String config) {
+                this.config = config;
+            }
+
+            public String getResult() {
+                return result;
+            }
+
+            public void setResult(String result) {
+                this.result = result;
+            }
+
+            public Class<?> getResultType() {
+                return resultType;
+            }
+
+            public void setResultType(Class<?> resultType) {
+                this.resultType = resultType;
+            }
+        }
+
     }
 
     public final class MockResultMethodHolder extends MockMethodHolder<MockResult> {
 
-        private final Class<?> controllerClass;
-
         public MockResultMethodHolder(HandlerMethod handlerMethod, Method oldMethod, MockResult mockResult) {
             super(handlerMethod, oldMethod, mockResult);
-            this.controllerClass = oldMethod.getDeclaringClass();
         }
 
         @ResponseBody
         public Object mockResult(Map<String, String> pathVar, Map<String, Object> param, HttpServletRequest request, HttpServletResponse response) {
             RequestPack pack = new RequestPack(pathVar, param, request, response);
             MockResult mockResult = getAnnotation();
-            if (!mockResult.result().isEmpty()) {
-                return paramParserService.parse(mockResult.resultType(), mockResult.result());
-            }
-            Object o = mockObjectWithCache(mockResultCreator, pack, getMockConfig(mockResult.config()), mockResult.cacheable());
-            // 日志输出
-            if (mockResult.log()) {
-                Logger logger = LoggerFactory.getLogger(controllerClass);
-                String result;
-                try {
-                    result = OBJECT_MAPPER.writeValueAsString(o);
-                } catch (JsonProcessingException e) {
-                    result = o.toString();
-                }
-                logger.debug(request.getMethod() + " - " + request.getRequestURL() + " - " + result);
-            }
-            return o;
+            return mockObject(new MockItem(mockResult.cacheable(), mockResult.log(), mockResult.config(), mockResult.result(), mockResult.resultType()), pack);
         }
 
     }
@@ -267,7 +340,7 @@ public class MockApi implements InitializingBean {
         public Object mockParams(Map<String, String> pathVar, Map<String, Object> param, HttpServletRequest request, HttpServletResponse response) {
             RequestPack pack = new RequestPack(pathVar, param, request, response);
             MockParams mockParams = getAnnotation();
-            return mockObjectWithCache(mockParamsCreator, pack, getMockConfig(mockParams.config()), mockParams.cacheable());
+            return mockObject(new MockItem(mockParams.cacheable(), mockParams.log(), mockParams.config(), mockParams.result(), mockParams.resultType()), pack);
         }
     }
 }

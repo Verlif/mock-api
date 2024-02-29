@@ -18,7 +18,7 @@ public class HelloController {
     }
 
     @MockResult(summary = "hi接口")
-    @MockParams
+    @MockParams(result = "hahahaha", cacheable = true, log = true, config = "c")
     @GetMapping("hi")
     public String hi() {
         return "hi";

@@ -28,15 +28,15 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.xiaoymin</groupId>
-            <artifactId>knife4j-openapi3-spring-boot-starter</artifactId>
-            <version>4.4.0</version>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>1.7.0</version>
         </dependency>
 
         <dependency>
             <groupId>com.github.Verlif</groupId>
             <artifactId>mock-data</artifactId>
-            <version>3.3</version>
+            <version>3.3.1</version>
         </dependency>
         <dependency>
             <groupId>com.github.Verlif</groupId>

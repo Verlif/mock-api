@@ -15,6 +15,7 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Operation
+@Inherited
 public @interface MockResult {
 
     /**
@@ -25,7 +26,7 @@ public @interface MockResult {
     /**
      * 是否打印mock日志
      */
-    boolean log() default true;
+    boolean log() default false;
 
     /**
      * 配置名称
@@ -42,78 +43,48 @@ public @interface MockResult {
      */
     Class<?> resultType() default String.class;
 
-    @AliasFor(
-            annotation = Operation.class
-    )
+    @AliasFor(annotation = Operation.class)
     String method() default "";
 
-    @AliasFor(
-            annotation = Operation.class
-    )
+    @AliasFor(annotation = Operation.class)
     String[] tags() default {};
 
-    @AliasFor(
-            annotation = Operation.class
-    )
+    @AliasFor(annotation = Operation.class)
     String summary() default "";
 
-    @AliasFor(
-            annotation = Operation.class
-    )
+    @AliasFor(annotation = Operation.class)
     String description() default "";
 
-    @AliasFor(
-            annotation = Operation.class
-    )
+    @AliasFor(annotation = Operation.class)
     RequestBody requestBody() default @RequestBody;
 
-    @AliasFor(
-            annotation = Operation.class
-    )
+    @AliasFor(annotation = Operation.class)
     ExternalDocumentation externalDocs() default @ExternalDocumentation;
 
-    @AliasFor(
-            annotation = Operation.class
-    )
+    @AliasFor(annotation = Operation.class)
     String operationId() default "";
 
-    @AliasFor(
-            annotation = Operation.class
-    )
+    @AliasFor(annotation = Operation.class)
     Parameter[] parameters() default {};
 
-    @AliasFor(
-            annotation = Operation.class
-    )
+    @AliasFor(annotation = Operation.class)
     ApiResponse[] responses() default {};
 
-    @AliasFor(
-            annotation = Operation.class
-    )
+    @AliasFor(annotation = Operation.class)
     boolean deprecated() default false;
 
-    @AliasFor(
-            annotation = Operation.class
-    )
+    @AliasFor(annotation = Operation.class)
     SecurityRequirement[] security() default {};
 
-    @AliasFor(
-            annotation = Operation.class
-    )
+    @AliasFor(annotation = Operation.class)
     Server[] servers() default {};
 
-    @AliasFor(
-            annotation = Operation.class
-    )
+    @AliasFor(annotation = Operation.class)
     Extension[] extensions() default {};
 
-    @AliasFor(
-            annotation = Operation.class
-    )
+    @AliasFor(annotation = Operation.class)
     boolean hidden() default false;
 
-    @AliasFor(
-            annotation = Operation.class
-    )
+    @AliasFor(annotation = Operation.class)
     boolean ignoreJsonView() default false;
 }
