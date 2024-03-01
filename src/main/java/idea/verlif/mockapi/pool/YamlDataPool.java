@@ -44,14 +44,14 @@ public class YamlDataPool extends FieldDataPool implements InitializingBean {
                 types = "String";
             }
             for (String typeStr : types.split(",")) {
-                if (typeStr.length() == 0) {
+                if (typeStr.isEmpty()) {
                     continue;
                 }
                 Class<?> target = parseClass(typeStr.trim());
                 String nameStr = dataInfo.getNames() == null ? "" : dataInfo.getNames();
                 PatternValues<Object> pv = new PatternValues<>();
                 for (String name : nameStr.split(",")) {
-                    if (name.length() == 0) {
+                    if (name.isEmpty()) {
                         continue;
                     }
                     pv.values(parseValues(dataInfo.getValues(), target), name.trim(), Pattern.CASE_INSENSITIVE);

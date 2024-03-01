@@ -83,14 +83,14 @@ public class MockApi implements InitializingBean {
             MockResult result = getAnnotation(handlerMethod, MockResult.class);
             if (result != null) {
                 MockResultMethodHolder mockMethodHolder = new MockResultMethodHolder(handlerMethod, method, result);
-                RequestMappingInfo extraInfo = buildResultRequestMappingInfo(mappingInfo);
+                RequestMappingInfo extraInfo = buildRequestMappingInfo(mappingInfo, mockMethodHolder);
                 requestMappingHandlerMapping.registerMapping(extraInfo, mockMethodHolder, resultMethod);
             }
             // 入参mock
             MockParams params = getAnnotation(handlerMethod, MockParams.class);
             if (params != null) {
                 MockParamsMethodHolder mockMethodHolder = new MockParamsMethodHolder(handlerMethod, method, params);
-                RequestMappingInfo extraInfo = buildParamsRequestMappingInfo(mappingInfo);
+                RequestMappingInfo extraInfo = buildRequestMappingInfo(mappingInfo, mockMethodHolder);
                 requestMappingHandlerMapping.registerMapping(extraInfo, mockMethodHolder, paramsMethod);
             }
         }
@@ -111,32 +111,12 @@ public class MockApi implements InitializingBean {
         return result;
     }
 
-    private RequestMappingInfo buildParamsRequestMappingInfo(RequestMappingInfo source) {
+    private RequestMappingInfo buildRequestMappingInfo(RequestMappingInfo source, MockMethodHolder<?> mockMethodHolder) {
         // 构造调用地址
-        Set<String> pathSets = pathSets(source.getPatternValues(), paramsPathGenerator);
-        return buildRequestMappingInfo(source, pathSets);
-    }
-
-    private RequestMappingInfo buildResultRequestMappingInfo(RequestMappingInfo source) {
-        // 构造调用地址
-        Set<String> pathSets = pathSets(source.getPatternValues(), resultPathGenerator);
-        return buildRequestMappingInfo(source, pathSets);
-    }
-
-    private Set<String> pathSets(Set<String> source, PathGenerator generator) {
         Set<String> pathSets = new HashSet<>();
-        for (String value : source) {
-            pathSets.add(generator.urlGenerate(value));
+        for (String value : source.getPatternValues()) {
+            pathSets.add(mockMethodHolder.path(value));
         }
-        return pathSets;
-    }
-
-    /**
-     * 构建新的请求处理信息
-     *
-     * @param source 源请求处理信息
-     */
-    private RequestMappingInfo buildRequestMappingInfo(RequestMappingInfo source, Set<String> pathSets) {
         // 获取调用方法
         Set<RequestMethod> set = source.getMethodsCondition().getMethods();
         Set<RequestMethod> newSet = new HashSet<>(set);
@@ -166,7 +146,7 @@ public class MockApi implements InitializingBean {
     /**
      * 构建方法数据类
      */
-    public class MockMethodHolder<T extends Annotation> {
+    public abstract class MockMethodHolder<T extends Annotation> {
 
         protected final HandlerMethod methodHolder;
         protected final Method oldMethod;
@@ -188,6 +168,8 @@ public class MockApi implements InitializingBean {
         public T getAnnotation() {
             return annotation;
         }
+
+        public abstract String path(String sourcePath);
 
         protected Object mockObject(MockItem mockItem, RequestPack pack) {
             if (!mockItem.getResult().isEmpty()) {
@@ -310,6 +292,15 @@ public class MockApi implements InitializingBean {
             super(handlerMethod, oldMethod, mockResult);
         }
 
+        @Override
+        public String path(String sourcePath) {
+            String path = getAnnotation().path();
+            if (path.isEmpty()) {
+                return resultPathGenerator.urlGenerate(sourcePath);
+            }
+            return path;
+        }
+
         @ResponseBody
         public Object mockResult(Map<String, String> pathVar, Map<String, Object> param, HttpServletRequest request, HttpServletResponse response) {
             RequestPack pack = new RequestPack(pathVar, param, request, response);
@@ -330,6 +321,15 @@ public class MockApi implements InitializingBean {
             RequestPack pack = new RequestPack(pathVar, param, request, response);
             MockParams mockParams = getAnnotation();
             return mockObject(new MockItem(mockParams.cacheable(), mockParams.log(), mockParams.config(), mockParams.result(), mockParams.resultType()), pack);
+        }
+
+        @Override
+        public String path(String sourcePath) {
+            String path = getAnnotation().path();
+            if (path.isEmpty()) {
+                return paramsPathGenerator.urlGenerate(sourcePath);
+            }
+            return path;
         }
     }
 }

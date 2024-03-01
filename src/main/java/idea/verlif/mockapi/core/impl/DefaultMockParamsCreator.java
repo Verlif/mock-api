@@ -34,22 +34,26 @@ public class DefaultMockParamsCreator implements MockParamsCreator {
             Parameter[] parameters = oldMethod.getParameters();
             for (int i = 0; i < arguments.length; i++) {
                 ClassGrc argument = arguments[i];
-                String name = null;
-                // 兼容RequestParam注解
-                Parameter parameter = parameters[i];
-                RequestParam param = parameter.getAnnotation(RequestParam.class);
-                if (param != null) {
-                    if (param.name().length() > 0) {
-                        name = param.name();
-                    } else if (param.value().length() > 0) {
-                        name = param.value();
-                    }
-                } else {
-                    name = parameter.getName();
-                }
+                String name = getName(parameters[i]);
                 map.put(name, creator.mock(argument));
             }
         }
         return map;
+    }
+
+    private static String getName(Parameter parameters) {
+        String name = null;
+        // 兼容RequestParam注解
+        RequestParam param = parameters.getAnnotation(RequestParam.class);
+        if (param != null) {
+            if (!param.name().isEmpty()) {
+                name = param.name();
+            } else if (!param.value().isEmpty()) {
+                name = param.value();
+            }
+        } else {
+            name = parameters.getName();
+        }
+        return name;
     }
 }

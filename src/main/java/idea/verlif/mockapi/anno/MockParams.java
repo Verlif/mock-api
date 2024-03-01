@@ -7,6 +7,11 @@ import java.lang.annotation.*;
 public @interface MockParams {
 
     /**
+     * 自定义路径，有值时会跳过路径生成器生成
+     */
+    String path() default "";
+
+    /**
      * 使用缓存。在第一次构建后，后续请求会直接返回第一次构建的数据。
      */
     boolean cacheable() default false;

@@ -11,7 +11,7 @@ public BaseResult<User> getById(Integer id) {
 }
 ```
 
-在访问时因为没有实际业务代码，只会返回`null`，而通过**MockApi**，则会返回如下内容：
+在访问时因为没有实际业务代码，只会返回`null`，而使用**MockApi**，则会返回如下内容：
 
 ```json
 {
@@ -63,15 +63,15 @@ public BaseResult<User> getById(Integer id) {
 
 配置文件说明请参考 [配置文件](docs/配置文件.md)
 
+推荐使用配置文件的方式进行数据池配置。
+
 ## 开发文档
 
 需要自定义构造或是更高级的功能请参考 [开发文档](docs/开发文档.md)
 
 ## 使用
 
-**！！！注意：目前的版本是可用性测试版本，仅适合学习和试验**
-
-**！！！注意：目前的版本基于SpringBoot2.7.18版本开发**
+**目前的版本基于SpringBoot-2.7.18版本开发**
 
 1. 添加依赖
 
@@ -103,6 +103,8 @@ public BaseResult<User> getById(Integer id) {
    ```
 
 4. 在需要**mock**的**controller类**上或是**接口方法**上添加`@MockResult`注解
+
+   注解采用就近原则的方式生效。
 
    ```java
    @MockParams

@@ -1,5 +1,7 @@
 package idea.verlif.mockapi.config;
 
+import idea.verlif.mockapi.core.MockApi;
+import org.springdoc.api.AbstractOpenApiResource;
 import org.springdoc.core.GroupedOpenApi;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -9,6 +11,11 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(prefix = "mockapi.swagger", value = "enabled", matchIfMissing = true)
 public class OpenApiRegister {
 
+    public OpenApiRegister() {
+        AbstractOpenApiResource.addRestControllers(MockApi.MockParamsMethodHolder.class);
+        AbstractOpenApiResource.addRestControllers(MockApi.MockResultMethodHolder.class);
+    }
+
     @Bean
     public GroupedOpenApi defaultApi() {
         GroupedOpenApi.Builder aDefault = GroupedOpenApi.builder()
@@ -16,7 +23,7 @@ public class OpenApiRegister {
                 .displayName("default");
         String[] paths = new String[2];
         paths[0] = "/mock/**";
-        paths[1] = "/prams/**";
+        paths[1] = "/params/**";
         return aDefault.pathsToExclude(paths).build();
     }
 
@@ -31,7 +38,6 @@ public class OpenApiRegister {
 
     @Bean
     public GroupedOpenApi paramsApi() {
-        ;
         GroupedOpenApi.Builder mockGroupBuilder = GroupedOpenApi.builder()
                 .group("mockapi.params")
                 .displayName("params");

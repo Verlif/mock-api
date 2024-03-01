@@ -24,7 +24,7 @@ public class UserController {
         return new OkResult<>(new User());
     }
 
-    @MockResult(log = false, config = "b")
+    @MockResult(path = "list", config = "b")
     @GetMapping("list")
     public BaseResult<List<User>> getList(@Validated UserQuery query) {
         return new OkResult<>(new ArrayList<>());
