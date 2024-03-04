@@ -6,10 +6,10 @@ import idea.verlif.mock.data.MockDataCreator;
 import idea.verlif.mock.data.config.MockDataConfig;
 import idea.verlif.mockapi.anno.MockParams;
 import idea.verlif.mockapi.anno.MockResult;
+import idea.verlif.mockapi.config.PathRecorder;
 import idea.verlif.mockapi.core.creator.MockParamsPathGenerator;
 import idea.verlif.mockapi.core.creator.MockResultCreator;
 import idea.verlif.mockapi.core.creator.MockResultPathGenerator;
-import idea.verlif.mockapi.core.creator.PathGenerator;
 import idea.verlif.parser.ParamParserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +48,8 @@ public class MockApi implements InitializingBean {
     private MockResultCreator mockResultCreator;
     @Autowired
     private ParamParserService paramParserService;
+    @Autowired
+    private PathRecorder pathRecorder;
 
     private final RequestMappingInfo.BuilderConfiguration builderConfiguration;
     private final Method resultMethod;
@@ -112,14 +114,16 @@ public class MockApi implements InitializingBean {
     }
 
     private RequestMappingInfo buildRequestMappingInfo(RequestMappingInfo source, MockMethodHolder<?> mockMethodHolder) {
-        // 构造调用地址
-        Set<String> pathSets = new HashSet<>();
-        for (String value : source.getPatternValues()) {
-            pathSets.add(mockMethodHolder.path(value));
-        }
         // 获取调用方法
         Set<RequestMethod> set = source.getMethodsCondition().getMethods();
         Set<RequestMethod> newSet = new HashSet<>(set);
+        // 构造调用地址
+        Set<String> pathSets = new HashSet<>();
+        for (String value : source.getPatternValues()) {
+            String path = mockMethodHolder.path(value);
+            pathSets.add(path);
+            pathRecorder.add(new PathRecorder.Path(value, set), new PathRecorder.Path(path, set));
+        }
         // 填充方法
         if (newSet.isEmpty()) {
             newSet.addAll(Arrays.asList(RequestMethod.values()));
