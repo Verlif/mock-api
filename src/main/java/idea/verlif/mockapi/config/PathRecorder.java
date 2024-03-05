@@ -3,6 +3,7 @@ package idea.verlif.mockapi.config;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -81,22 +82,42 @@ public class PathRecorder implements Iterable<PathRecorder.Path> {
 
     public static class Path {
 
-        private final Set<RequestMethod> methods;
+        private final Set<RequestMethod> requestMethods;
 
         private final String path;
 
+        private Object handle;
+
+        private Method method;
+
         public Path(String path) {
             this.path = path;
-            this.methods = new HashSet<>(Arrays.asList(RequestMethod.values()));
+            this.requestMethods = new HashSet<>(Arrays.asList(RequestMethod.values()));
         }
 
-        public Path(String path, Set<RequestMethod> methods) {
+        public Path(String path, Set<RequestMethod> requestMethods) {
             this.path = path;
-            this.methods = methods;
+            this.requestMethods = requestMethods;
         }
 
-        public Set<RequestMethod> getMethods() {
-            return methods;
+        public Object getHandle() {
+            return handle;
+        }
+
+        public void setHandle(Object handle) {
+            this.handle = handle;
+        }
+
+        public Method getMethod() {
+            return method;
+        }
+
+        public void setMethod(Method method) {
+            this.method = method;
+        }
+
+        public Set<RequestMethod> getRequestMethods() {
+            return requestMethods;
         }
 
         public String getPath() {

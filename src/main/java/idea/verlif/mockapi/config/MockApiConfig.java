@@ -1,7 +1,7 @@
 package idea.verlif.mockapi.config;
 
 import idea.verlif.mock.data.MockDataCreator;
-import idea.verlif.mockapi.core.MockApi;
+import idea.verlif.mockapi.core.MockApiBuilder;
 import idea.verlif.mockapi.core.creator.MockParamsCreator;
 import idea.verlif.mockapi.core.creator.MockParamsPathGenerator;
 import idea.verlif.mockapi.core.creator.MockResultCreator;
@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration
 @ConfigurationProperties(prefix = "mockapi")
-@Import({MockApi.class, YamlDataPool.class})
+@Import({MockApiBuilder.class, YamlDataPool.class})
 public class MockApiConfig {
 
     @Bean

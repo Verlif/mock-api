@@ -13,24 +13,26 @@ import idea.verlif.mockapi.core.creator.MockResultPathGenerator;
 import idea.verlif.parser.ParamParserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
-@Component
-public class MockApi implements InitializingBean {
+@Configuration
+public class MockApiBuilder {
 
     private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -51,13 +53,11 @@ public class MockApi implements InitializingBean {
     @Autowired
     private PathRecorder pathRecorder;
 
-    private final RequestMappingInfo.BuilderConfiguration builderConfiguration;
     private final Method resultMethod;
     private final Method paramsMethod;
     private final Map<String, MockDataConfig> configMap;
 
-    public MockApi() throws NoSuchMethodException {
-        builderConfiguration = new RequestMappingInfo.BuilderConfiguration();
+    public MockApiBuilder() throws NoSuchMethodException {
         resultMethod = MockResultMethodHolder.class.getMethod("mockResult", Map.class, Map.class, HttpServletRequest.class, HttpServletResponse.class);
         paramsMethod = MockParamsMethodHolder.class.getMethod("mockParams", Map.class, Map.class, HttpServletRequest.class, HttpServletResponse.class);
         configMap = new HashMap<>();
@@ -74,7 +74,9 @@ public class MockApi implements InitializingBean {
     /**
      * 注册新的请求处理
      */
-    public void register() {
+    @PostConstruct
+    public void build() {
+        collectMockConfig();
         Map<RequestMappingInfo, HandlerMethod> handlerMethods = requestMappingHandlerMapping.getHandlerMethods();
         for (Map.Entry<RequestMappingInfo, HandlerMethod> methodEntry : handlerMethods.entrySet()) {
             HandlerMethod handlerMethod = methodEntry.getValue();
@@ -85,15 +87,13 @@ public class MockApi implements InitializingBean {
             MockResult result = getAnnotation(handlerMethod, MockResult.class);
             if (result != null) {
                 MockResultMethodHolder mockMethodHolder = new MockResultMethodHolder(handlerMethod, method, result);
-                RequestMappingInfo extraInfo = buildRequestMappingInfo(mappingInfo, mockMethodHolder);
-                requestMappingHandlerMapping.registerMapping(extraInfo, mockMethodHolder, resultMethod);
+                recordPath(mappingInfo, mockMethodHolder, resultMethod);
             }
             // 入参mock
             MockParams params = getAnnotation(handlerMethod, MockParams.class);
             if (params != null) {
                 MockParamsMethodHolder mockMethodHolder = new MockParamsMethodHolder(handlerMethod, method, params);
-                RequestMappingInfo extraInfo = buildRequestMappingInfo(mappingInfo, mockMethodHolder);
-                requestMappingHandlerMapping.registerMapping(extraInfo, mockMethodHolder, paramsMethod);
+                recordPath(mappingInfo, mockMethodHolder, paramsMethod);
             }
         }
     }
@@ -113,38 +113,16 @@ public class MockApi implements InitializingBean {
         return result;
     }
 
-    private RequestMappingInfo buildRequestMappingInfo(RequestMappingInfo source, MockMethodHolder<?> mockMethodHolder) {
+    private void recordPath(RequestMappingInfo source, MockMethodHolder<?> mockMethodHolder, Method method) {
         // 获取调用方法
         Set<RequestMethod> set = source.getMethodsCondition().getMethods();
-        Set<RequestMethod> newSet = new HashSet<>(set);
-        // 构造调用地址
-        Set<String> pathSets = new HashSet<>();
         for (String value : source.getPatternValues()) {
             String path = mockMethodHolder.path(value);
-            pathSets.add(path);
-            pathRecorder.add(new PathRecorder.Path(value, set), new PathRecorder.Path(path, set));
+            PathRecorder.Path targetPath = new PathRecorder.Path(path, set);
+            targetPath.setHandle(mockMethodHolder);
+            targetPath.setMethod(method);
+            pathRecorder.add(new PathRecorder.Path(value, set), targetPath);
         }
-        // 填充方法
-        if (newSet.isEmpty()) {
-            newSet.addAll(Arrays.asList(RequestMethod.values()));
-        }
-        return RequestMappingInfo.paths(pathSets.toArray(new String[0]))
-                .methods(newSet.toArray(new RequestMethod[0]))
-                .options(builderConfiguration)
-                .build();
-    }
-
-    @Override
-    public void afterPropertiesSet() {
-        builderConfiguration.setTrailingSlashMatch(requestMappingHandlerMapping.useTrailingSlashMatch());
-        builderConfiguration.setContentNegotiationManager(requestMappingHandlerMapping.getContentNegotiationManager());
-        if (requestMappingHandlerMapping.getPatternParser() != null) {
-            builderConfiguration.setPatternParser(requestMappingHandlerMapping.getPatternParser());
-        } else {
-            builderConfiguration.setPathMatcher(requestMappingHandlerMapping.getPathMatcher());
-        }
-        collectMockConfig();
-        register();
     }
 
     /**
@@ -156,11 +134,6 @@ public class MockApi implements InitializingBean {
         protected final Method oldMethod;
         protected final T annotation;
         protected final Class<?> controllerClass;
-
-        /**
-         * 数据缓存
-         */
-        private Object object;
 
         public MockMethodHolder(HandlerMethod handlerMethod, Method oldMethod, T annotation) {
             this.methodHolder = handlerMethod;
@@ -179,7 +152,7 @@ public class MockApi implements InitializingBean {
             if (!mockItem.getResult().isEmpty()) {
                 return paramParserService.parse(mockItem.getResultType(), mockItem.getResult());
             }
-            Object o = mockObjectWithCache(mockResultCreator, pack, getMockConfig(mockItem.getConfig()), mockItem.isCacheable());
+            Object o = mockObject(mockResultCreator, pack, getMockConfig(mockItem.getConfig()));
             // 日志输出
             if (mockItem.isLog()) {
                 Logger logger = LoggerFactory.getLogger(controllerClass);
@@ -194,30 +167,13 @@ public class MockApi implements InitializingBean {
             return o;
         }
 
-        protected Object mockObjectWithCache(ObjectMocker objectMocker, RequestPack pack, MockDataConfig config, boolean cacheable) {
+        protected Object mockObject(ObjectMocker objectMocker, RequestPack pack, MockDataConfig config) {
             pack.setOldMethod(oldMethod);
             pack.setHandlerMethod(methodHolder);
-            Object o;
-            if (object == null) {
-                o = objectMocker.mock(pack, creator, config);
-            } else {
-                o = object;
-            }
-            // 缓存数据
-            if (cacheable) {
-                object = o;
-            } else {
-                object = null;
-            }
-            return o;
+            return objectMocker.mock(pack, creator, config);
         }
 
         public class MockItem {
-
-            /**
-             * 使用缓存。在第一次构建后，后续请求会直接返回第一次构建的数据。
-             */
-            private boolean cacheable;
 
             /**
              * 是否打印mock日志
@@ -239,20 +195,11 @@ public class MockApi implements InitializingBean {
              */
             private Class<?> resultType;
 
-            public MockItem(boolean cacheable, boolean log, String config, String result, Class<?> resultType) {
-                this.cacheable = cacheable;
+            public MockItem(boolean log, String config, String result, Class<?> resultType) {
                 this.log = log;
                 this.config = config;
                 this.result = result;
                 this.resultType = resultType;
-            }
-
-            public boolean isCacheable() {
-                return cacheable;
-            }
-
-            public void setCacheable(boolean cacheable) {
-                this.cacheable = cacheable;
             }
 
             public boolean isLog() {
@@ -309,7 +256,7 @@ public class MockApi implements InitializingBean {
         public Object mockResult(Map<String, String> pathVar, Map<String, Object> param, HttpServletRequest request, HttpServletResponse response) {
             RequestPack pack = new RequestPack(pathVar, param, request, response);
             MockResult mockResult = getAnnotation();
-            return mockObject(new MockItem(mockResult.cacheable(), mockResult.log(), mockResult.config(), mockResult.result(), mockResult.resultType()), pack);
+            return mockObject(new MockItem(mockResult.log(), mockResult.config(), mockResult.result(), mockResult.resultType()), pack);
         }
 
     }
@@ -324,7 +271,7 @@ public class MockApi implements InitializingBean {
         public Object mockParams(Map<String, String> pathVar, Map<String, Object> param, HttpServletRequest request, HttpServletResponse response) {
             RequestPack pack = new RequestPack(pathVar, param, request, response);
             MockParams mockParams = getAnnotation();
-            return mockObject(new MockItem(mockParams.cacheable(), mockParams.log(), mockParams.config(), mockParams.result(), mockParams.resultType()), pack);
+            return mockObject(new MockItem(mockParams.log(), mockParams.config(), mockParams.result(), mockParams.resultType()), pack);
         }
 
         @Override

@@ -1,6 +1,7 @@
 package idea.verlif.mockapi.pool;
 
 import idea.verlif.mock.data.config.FieldDataPool;
+import idea.verlif.mockapi.MockApiException;
 import idea.verlif.parser.ParamParserService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,7 +90,7 @@ public class YamlDataPool extends FieldDataPool implements InitializingBean {
         try {
             return Class.forName(pkgName);
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new MockApiException(e);
         }
     }
 

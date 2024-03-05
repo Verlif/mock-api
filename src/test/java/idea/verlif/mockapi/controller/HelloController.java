@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 public class HelloController {
 
     @Operation(summary = "echo接口")
-    @MockResult(path = "xixi", cacheable = true, config = "a")
+    @MockResult(path = "xixi", config = "a")
     @GetMapping("echo/{str}")
     public String echo(@PathVariable String str) {
         return str;
@@ -19,7 +19,7 @@ public class HelloController {
 
     @Operation(summary = "hi接口")
     @MockResult(path = "haha")
-    @MockParams(result = "hahahaha", cacheable = true, log = true, config = "b")
+    @MockParams(result = "hahahaha", log = true, config = "b")
     @GetMapping("hi")
     public String hi() {
         return "hi";

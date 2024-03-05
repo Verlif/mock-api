@@ -14,7 +14,6 @@ import idea.verlif.mockapi.global.result.ext.FailResult;
 import idea.verlif.mockapi.global.result.ext.OkResult;
 import idea.verlif.reflection.domain.MethodGrc;
 import idea.verlif.reflection.util.MethodUtil;
-import idea.verlif.reflection.util.ReflectUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -23,9 +22,6 @@ import java.util.Random;
 
 @Component
 public class MockResultCreatorImpl implements MockResultCreator, InitializingBean {
-
-    @Autowired
-    private MockApiConfig config;
 
     @Autowired
     private MockDataCreator creator;

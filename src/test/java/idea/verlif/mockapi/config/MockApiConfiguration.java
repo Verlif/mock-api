@@ -23,7 +23,7 @@ public class MockApiConfiguration {
                     private final Random random = new Random();
                     @Override
                     public int getSize(Class<?> aClass) {
-                        return random.nextInt(20);
+                        return random.nextInt(20) + 2;
                     }
                 })
                 .fieldValue(String.class, "固定String");

@@ -25,9 +25,12 @@ public BaseResult<User> getById(Integer id) {
 }
 ```
 
-**MockApi**不会访问您的方法代码，而是使用自己的数据生成逻辑，这对您的业务不会造成任何影响。
+## 工具原理
 
-## 简单说明
+**MockApi**通过扫描接口注解获取接口信息，根据获得的信息注册新接口到请求路由表，并指向新方法。
+因此在访问模拟接口时，服务将不会调用到您的实际方法代码，而是使用**MockApi**的数据生成逻辑，这对您的业务不会造成任何影响。
+
+## 简单使用
 
 只需要在接口上配置一个注解，即可生成此接口的**mock接口**用于返回测试数据：
 
@@ -123,7 +126,7 @@ public BaseResult<User> getById(Integer id) {
            return new OkResult<>(new ArrayList<>());
        }
    
-       @MockResult(cacheable = true)
+       @MockResult
        @PutMapping
        public BaseResult<User> update(User user) {
            return new OkResult<>(user);
@@ -139,19 +142,19 @@ public BaseResult<User> getById(Integer id) {
 
 5. 进行结果**mock**
 
-访问`127.0.0.1:8080/mock/user`，则调用`getById`的**mock**方法，并返回以下结果：
-
-```json
-{
-    "code": 201,
-    "msg": "nk-ww",
-    "data": {
-        "userId": 4,
-        "nickname": "小红",
-        "roleKey": "VISITOR"
-    }
-}
-```
+   访问`127.0.0.1:8080/mock/user`，则调用`getById`的**mock**方法，并返回以下结果：
+   
+   ```json
+   {
+       "code": 201,
+       "msg": "nk-ww",
+       "data": {
+           "userId": 4,
+           "nickname": "小红",
+           "roleKey": "VISITOR"
+       }
+   }
+   ```
 
 **完成**
 
