@@ -3,19 +3,11 @@ package idea.verlif.mockapi.global.domain;
 /**
  * @author Verlif
  */
-public class UserFavorite {
-
-    private Integer userId;
+public class Favorite {
 
     private String name;
 
-    public Integer getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
+    private String type;
 
     public String getName() {
         return name;
@@ -23,5 +15,13 @@ public class UserFavorite {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

@@ -4,7 +4,6 @@ import idea.verlif.mock.data.MockDataCreator;
 import idea.verlif.mock.data.config.MockDataConfig;
 import idea.verlif.mock.data.creator.InstanceCreator;
 import idea.verlif.mock.data.creator.data.IntegerRandomCreator;
-import idea.verlif.mockapi.config.MockApiConfig;
 import idea.verlif.mockapi.core.RequestPack;
 import idea.verlif.mockapi.core.creator.MockResultCreator;
 import idea.verlif.mockapi.global.domain.User;

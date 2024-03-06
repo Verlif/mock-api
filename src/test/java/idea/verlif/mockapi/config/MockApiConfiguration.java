@@ -26,6 +26,6 @@ public class MockApiConfiguration {
                         return random.nextInt(20) + 2;
                     }
                 })
-                .fieldValue(String.class, "固定String");
+                .fieldObject(String.class, "固定String");
     }
 }

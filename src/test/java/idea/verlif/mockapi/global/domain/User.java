@@ -13,6 +13,8 @@ public class User implements Serializable {
 
     private Role.RoleKey roleKey;
 
+    private Favorite favorite;
+
     public Integer getUserId() {
         return userId;
     }
@@ -39,6 +41,14 @@ public class User implements Serializable {
 
     public void setRoleKey(Role.RoleKey roleKey) {
         this.roleKey = roleKey;
+    }
+
+    public Favorite getFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(Favorite favorite) {
+        this.favorite = favorite;
     }
 
     public User() {

@@ -12,7 +12,6 @@ import idea.verlif.mockapi.core.impl.DefaultMockResultCreator;
 import idea.verlif.mockapi.core.impl.DefaultMockResultPathGenerator;
 import idea.verlif.mockapi.pool.YamlDataPool;
 import idea.verlif.parser.ParamParserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -28,11 +27,8 @@ import org.springframework.context.annotation.Import;
 public class MockApiConfig {
 
     @Bean
-    public MockDataCreator getMockDataCreator(@Autowired(required = false) YamlDataPool yamlDataPool) {
+    public MockDataCreator getMockDataCreator() {
         MockDataCreator creator = new MockDataCreator();
-        if (yamlDataPool != null) {
-            creator.fieldDataPool(yamlDataPool);
-        }
         creator.getConfig()
                 .autoCascade(true);
         return creator;

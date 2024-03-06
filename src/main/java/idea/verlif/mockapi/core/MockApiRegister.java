@@ -36,8 +36,10 @@ public class MockApiRegister {
     public void register() {
         for (PathRecorder.Path sourcePath : pathRecorder) {
             PathRecorder.Path targetPath = pathRecorder.getValue(sourcePath);
-            RequestMappingInfo requestMappingInfo = buildRequestMappingInfo(targetPath);
-            requestMappingHandlerMapping.registerMapping(requestMappingInfo, targetPath.getHandle(), targetPath.getMethod());
+            if (targetPath.getHandle() != null && targetPath.getMethod() != null) {
+                RequestMappingInfo requestMappingInfo = buildRequestMappingInfo(targetPath);
+                requestMappingHandlerMapping.registerMapping(requestMappingInfo, targetPath.getHandle(), targetPath.getMethod());
+            }
         }
     }
 
