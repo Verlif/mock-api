@@ -15,8 +15,8 @@ import javax.annotation.PostConstruct;
 public class MockApiRegister {
 
     private final RequestMappingInfo.BuilderConfiguration builderConfiguration;
-
     private final RequestMappingHandlerMapping requestMappingHandlerMapping;
+
     @Autowired
     private PathRecorder pathRecorder;
 
@@ -34,8 +34,8 @@ public class MockApiRegister {
 
     @PostConstruct
     public void register() {
-        for (PathRecorder.Path sourcePath : pathRecorder) {
-            PathRecorder.Path targetPath = pathRecorder.getValue(sourcePath);
+        for (int i = 0, size = pathRecorder.getSize(); i < size; i++) {
+            PathRecorder.Path targetPath = pathRecorder.getValue(i);
             if (targetPath.getHandle() != null && targetPath.getMethod() != null) {
                 RequestMappingInfo requestMappingInfo = buildRequestMappingInfo(targetPath);
                 requestMappingHandlerMapping.registerMapping(requestMappingInfo, targetPath.getHandle(), targetPath.getMethod());

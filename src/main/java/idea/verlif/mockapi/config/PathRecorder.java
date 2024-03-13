@@ -1,10 +1,14 @@
 package idea.verlif.mockapi.config;
 
+import com.sun.javafx.collections.UnmodifiableListSet;
+import idea.verlif.reflection.domain.SFunction;
+import idea.verlif.reflection.util.MethodUtil;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * 路径记录
@@ -33,6 +37,10 @@ public class PathRecorder implements Iterable<PathRecorder.Path> {
     public synchronized void append(PathRecorder argValues) {
         this.keys.addAll(argValues.keys);
         this.values.addAll(argValues.values);
+    }
+
+    public int getSize() {
+        return keys.size();
     }
 
     public Path getKey(int index) {
@@ -82,7 +90,10 @@ public class PathRecorder implements Iterable<PathRecorder.Path> {
 
     public static class Path {
 
-        private final Set<RequestMethod> requestMethods;
+        public static final Path EMPTY = new Path("", Collections.emptySet());
+        private static final Set<RequestMethod> ALL_REQUEST_METHODS = new UnmodifiableListSet<>(Arrays.asList(RequestMethod.values()));
+
+        private Set<RequestMethod> requestMethods;
 
         private final String path;
 
@@ -92,7 +103,7 @@ public class PathRecorder implements Iterable<PathRecorder.Path> {
 
         public Path(String path) {
             this.path = path;
-            this.requestMethods = new HashSet<>(Arrays.asList(RequestMethod.values()));
+            this.requestMethods = ALL_REQUEST_METHODS;
         }
 
         public Path(String path, Set<RequestMethod> requestMethods) {
@@ -104,16 +115,32 @@ public class PathRecorder implements Iterable<PathRecorder.Path> {
             return handle;
         }
 
-        public void setHandle(Object handle) {
-            this.handle = handle;
-        }
-
         public Method getMethod() {
             return method;
         }
 
-        public void setMethod(Method method) {
+        public void setMethod(Method method, Object handle) {
             this.method = method;
+            this.handle = handle;
+        }
+
+        public Path method(Method method, Object handle) {
+            setMethod(method, handle);
+            return this;
+        }
+
+        public void setRequestMethods(Set<RequestMethod> requestMethods) {
+            this.requestMethods = requestMethods;
+        }
+
+        public Path requestMethods(RequestMethod... requestMethods) {
+            if (requestMethods.length > 0) {
+                this.requestMethods = new HashSet<>();
+                this.requestMethods.addAll(Arrays.asList(requestMethods));
+            } else {
+                this.requestMethods = Collections.emptySet();
+            }
+            return this;
         }
 
         public Set<RequestMethod> getRequestMethods() {
@@ -124,5 +151,59 @@ public class PathRecorder implements Iterable<PathRecorder.Path> {
             return path;
         }
 
+        /**
+         * 由对象的类生成访问路径信息
+         *
+         * @param handle   目标类的实例对象
+         * @param function 目标方法lambda表达式
+         * @return 访问路径数组
+         */
+        public static <T, R> Path generate(Object handle, SFunction<T, R> function) {
+            Method method = MethodUtil.getMethodFromLambda(function);
+            return generate(handle, method);
+        }
+
+        /**
+         * 由对象的类生成访问路径信息
+         *
+         * @param handle 目标类的实例对象
+         * @param method 目标方法
+         * @return 访问路径数组
+         */
+        public static Path generate(Object handle, Method method) {
+            Path path = new Path(method.getName());
+            path.setMethod(method, handle);
+            return path;
+        }
+
+        /**
+         * 对类的所有方法生成对应的访问路径
+         *
+         * @param handle 目标类的实例对象
+         * @param filter 类过滤器
+         * @return 访问路径数组
+         */
+        public static Path[] generate(Object handle, Predicate<Method> filter) {
+            Class<?> cla = handle.getClass();
+            List<Method> methods = MethodUtil.getAllMethods(cla, filter);
+            Path[] paths = new Path[methods.size()];
+            for (int i = 0; i < methods.size(); i++) {
+                paths[i] = generate(handle, methods.get(i));
+            }
+            return paths;
+        }
+
+        /**
+         * 对类的所有自定义方法生成对应的访问路径
+         *
+         * @param handle 目标类的实例对象
+         * @return 访问路径数组
+         */
+        public static Path[] generate(Object handle) {
+            Class<?> cla = handle.getClass();
+            return generate(handle, (Predicate<Method>) m -> m.isAccessible() && m.getDeclaringClass() == cla);
+        }
+
     }
+
 }

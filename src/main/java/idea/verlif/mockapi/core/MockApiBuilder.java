@@ -119,8 +119,7 @@ public class MockApiBuilder {
         for (String value : source.getPatternValues()) {
             String path = mockMethodHolder.path(value);
             PathRecorder.Path targetPath = new PathRecorder.Path(path, set);
-            targetPath.setHandle(mockMethodHolder);
-            targetPath.setMethod(method);
+            targetPath.setMethod(method, mockMethodHolder);
             pathRecorder.add(new PathRecorder.Path(value, set), targetPath);
         }
     }
