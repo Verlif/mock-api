@@ -1,12 +1,13 @@
 package idea.verlif.mockapi.config;
 
-import com.sun.javafx.collections.UnmodifiableListSet;
+import idea.verlif.mockapi.core.MockItem;
 import idea.verlif.reflection.domain.SFunction;
 import idea.verlif.reflection.util.MethodUtil;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -32,6 +33,13 @@ public class PathRecorder implements Iterable<PathRecorder.Path> {
     public synchronized void add(Path key, Path value) {
         keys.add(key);
         values.add(value);
+    }
+
+    public synchronized void add(Path key, Path[] paths) {
+        for (Path path : paths) {
+            keys.add(key);
+            values.add(path);
+        }
     }
 
     public synchronized void append(PathRecorder argValues) {
@@ -88,27 +96,48 @@ public class PathRecorder implements Iterable<PathRecorder.Path> {
         }
     }
 
+    public enum MethodSign {
+        /**
+         * 方法结果
+         */
+        RESULT,
+        /**
+         * 方法入参
+         */
+        PARAMETER,
+    }
+
     public static class Path {
 
-        public static final Path EMPTY = new Path("", Collections.emptySet());
-        private static final Set<RequestMethod> ALL_REQUEST_METHODS = new UnmodifiableListSet<>(Arrays.asList(RequestMethod.values()));
+        public static final Path EMPTY = new Path("", new RequestMethod[]{});
+        private static final RequestMethod[] ALL_REQUEST_METHODS = RequestMethod.values();
 
-        private Set<RequestMethod> requestMethods;
+        private RequestMethod[] requestMethods;
 
-        private final String path;
+        private String path;
 
         private Object handle;
 
         private Method method;
 
+        private MethodSign methodSign;
+
+        private MockItem mockItem;
+
         public Path(String path) {
-            this.path = path;
-            this.requestMethods = ALL_REQUEST_METHODS;
+            this(path, ALL_REQUEST_METHODS);
         }
 
-        public Path(String path, Set<RequestMethod> requestMethods) {
+        public Path(String path, RequestMethod[] requestMethods) {
             this.path = path;
             this.requestMethods = requestMethods;
+            this.methodSign = MethodSign.RESULT;
+        }
+
+        public Path(String path, Collection<RequestMethod> requestMethods) {
+            this.path = path;
+            this.requestMethods = requestMethods.toArray(new RequestMethod[0]);
+            this.methodSign = MethodSign.RESULT;
         }
 
         public Object getHandle() {
@@ -119,36 +148,52 @@ public class PathRecorder implements Iterable<PathRecorder.Path> {
             return method;
         }
 
-        public void setMethod(Method method, Object handle) {
-            this.method = method;
-            this.handle = handle;
+        public void setPath(String path) {
+            this.path = path;
         }
 
-        public Path method(Method method, Object handle) {
-            setMethod(method, handle);
+        public void setMethod(Method method, Object handle, MethodSign methodSign) {
+            this.method = method;
+            this.handle = handle;
+            this.methodSign = methodSign;
+        }
+
+        public Path method(Method method, Object handle, MethodSign methodSign) {
+            setMethod(method, handle, methodSign);
             return this;
         }
 
+        public MockItem getMockItem() {
+            return mockItem;
+        }
+
+        public void setMockItem(MockItem mockItem) {
+            this.mockItem = mockItem;
+        }
+
         public void setRequestMethods(Set<RequestMethod> requestMethods) {
+            this.requestMethods = requestMethods.toArray(new RequestMethod[0]);
+        }
+
+        public void setRequestMethods(RequestMethod[] requestMethods) {
             this.requestMethods = requestMethods;
         }
 
         public Path requestMethods(RequestMethod... requestMethods) {
-            if (requestMethods.length > 0) {
-                this.requestMethods = new HashSet<>();
-                this.requestMethods.addAll(Arrays.asList(requestMethods));
-            } else {
-                this.requestMethods = Collections.emptySet();
-            }
+            this.setRequestMethods(requestMethods);
             return this;
         }
 
-        public Set<RequestMethod> getRequestMethods() {
+        public RequestMethod[] getRequestMethods() {
             return requestMethods;
         }
 
         public String getPath() {
             return path;
+        }
+
+        public MethodSign getMethodSign() {
+            return methodSign;
         }
 
         /**
@@ -158,9 +203,9 @@ public class PathRecorder implements Iterable<PathRecorder.Path> {
          * @param function 目标方法lambda表达式
          * @return 访问路径数组
          */
-        public static <T, R> Path generate(Object handle, SFunction<T, R> function) {
+        public static <T, R> Path generate(Object handle, SFunction<T, R> function, MethodSign methodSign) {
             Method method = MethodUtil.getMethodFromLambda(function);
-            return generate(handle, method);
+            return generate(handle, method, methodSign);
         }
 
         /**
@@ -170,9 +215,9 @@ public class PathRecorder implements Iterable<PathRecorder.Path> {
          * @param method 目标方法
          * @return 访问路径数组
          */
-        public static Path generate(Object handle, Method method) {
+        public static Path generate(Object handle, Method method, MethodSign methodSign) {
             Path path = new Path(method.getName());
-            path.setMethod(method, handle);
+            path.setMethod(method, handle, methodSign);
             return path;
         }
 
@@ -180,15 +225,15 @@ public class PathRecorder implements Iterable<PathRecorder.Path> {
          * 对类的所有方法生成对应的访问路径
          *
          * @param handle 目标类的实例对象
-         * @param filter 类过滤器
+         * @param filter 类方法过滤器
          * @return 访问路径数组
          */
-        public static Path[] generate(Object handle, Predicate<Method> filter) {
+        public static Path[] generate(Object handle, Predicate<Method> filter, MethodSign methodSign) {
             Class<?> cla = handle.getClass();
             List<Method> methods = MethodUtil.getAllMethods(cla, filter);
             Path[] paths = new Path[methods.size()];
             for (int i = 0; i < methods.size(); i++) {
-                paths[i] = generate(handle, methods.get(i));
+                paths[i] = generate(handle, methods.get(i), methodSign);
             }
             return paths;
         }
@@ -199,9 +244,9 @@ public class PathRecorder implements Iterable<PathRecorder.Path> {
          * @param handle 目标类的实例对象
          * @return 访问路径数组
          */
-        public static Path[] generate(Object handle) {
+        public static Path[] generate(Object handle, MethodSign methodSign) {
             Class<?> cla = handle.getClass();
-            return generate(handle, (Predicate<Method>) m -> m.isAccessible() && m.getDeclaringClass() == cla);
+            return generate(handle, (Predicate<Method>) m -> Modifier.isPublic(m.getModifiers()) && m.getDeclaringClass() == cla, methodSign);
         }
 
     }

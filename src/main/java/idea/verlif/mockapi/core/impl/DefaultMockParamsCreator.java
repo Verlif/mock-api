@@ -22,7 +22,7 @@ public class DefaultMockParamsCreator implements MockParamsCreator {
         MethodGrc methodGrc;
         ClassGrc[] arguments;
         try {
-            methodGrc = MethodUtil.getMethodGrc(oldMethod, pack.getHandlerMethod().getClass());
+            methodGrc = MethodUtil.getMethodGrc(oldMethod, pack.getMethodHandle().getClass());
             arguments = methodGrc.getArguments();
         } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
             throw new RuntimeException(e);

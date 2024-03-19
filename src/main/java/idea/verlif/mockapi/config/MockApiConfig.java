@@ -10,6 +10,8 @@ import idea.verlif.mockapi.core.impl.DefaultMockParamsCreator;
 import idea.verlif.mockapi.core.impl.DefaultMockParamsPathGenerator;
 import idea.verlif.mockapi.core.impl.DefaultMockResultCreator;
 import idea.verlif.mockapi.core.impl.DefaultMockResultPathGenerator;
+import idea.verlif.mockapi.log.MockLogger;
+import idea.verlif.mockapi.log.impl.NoMockLogger;
 import idea.verlif.mockapi.pool.YamlDataPool;
 import idea.verlif.parser.ParamParserService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -79,4 +81,9 @@ public class MockApiConfig {
         return new DefaultMockResultPathGenerator();
     }
 
+    @Bean
+    @ConditionalOnMissingBean(MockLogger.class)
+    public MockLogger mockLogger() {
+        return new NoMockLogger();
+    }
 }

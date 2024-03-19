@@ -1,5 +1,7 @@
 package idea.verlif.mockapi.anno;
 
+import org.springframework.web.bind.annotation.RequestMethod;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -34,4 +36,8 @@ public @interface MockResult {
      */
     Class<?> resultType() default String.class;
 
+    /**
+     * 请求方法，默认使用目标方法所使用的请求方法，若没有则使用全部方法
+     */
+    RequestMethod[] methods() default {};
 }

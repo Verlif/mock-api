@@ -35,7 +35,7 @@ public class RequestPack {
     /**
      * 调用方法的所属对象
      */
-    private HandlerMethod handlerMethod;
+    private Object methodHandle;
 
     /**
      * 原调用的方法对象
@@ -52,12 +52,12 @@ public class RequestPack {
 
     public RequestPack(Map<String, String> pathVars, Map<String, Object> params,
                        HttpServletRequest request, HttpServletResponse response,
-                       HandlerMethod handlerMethod, Method oldMethod) {
+                       HandlerMethod methodHandle, Method oldMethod) {
         this.pathVars = pathVars;
         this.params = params;
         this.request = request;
         this.response = response;
-        this.handlerMethod = handlerMethod;
+        this.methodHandle = methodHandle;
         this.oldMethod = oldMethod;
     }
 
@@ -85,16 +85,16 @@ public class RequestPack {
         return response;
     }
 
-    public HandlerMethod getHandlerMethod() {
-        return handlerMethod;
+    public Object getMethodHandle() {
+        return methodHandle;
     }
 
     public Method getOldMethod() {
         return oldMethod;
     }
 
-    public void setHandlerMethod(HandlerMethod handlerMethod) {
-        this.handlerMethod = handlerMethod;
+    public void setMethodHandle(Object methodHandle) {
+        this.methodHandle = methodHandle;
     }
 
     public void setOldMethod(Method oldMethod) {

@@ -19,7 +19,7 @@ public class HelloController {
 
     @Operation(summary = "hi接口")
     @MockResult(path = "haha")
-    @MockParams(result = "hahahaha", log = true, config = "b")
+    @MockParams(log = true, config = "b")
     @GetMapping("hi")
     public String hi() {
         return "hi";

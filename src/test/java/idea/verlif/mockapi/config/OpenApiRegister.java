@@ -1,6 +1,6 @@
 package idea.verlif.mockapi.config;
 
-import idea.verlif.mockapi.core.MockApiBuilder;
+import idea.verlif.mockapi.core.MockApiRegister;
 import org.springdoc.api.AbstractOpenApiResource;
 import org.springdoc.core.GroupedOpenApi;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -12,8 +12,9 @@ import org.springframework.context.annotation.Configuration;
 public class OpenApiRegister {
 
     public OpenApiRegister() {
-        AbstractOpenApiResource.addRestControllers(MockApiBuilder.MockParamsMethodHolder.class);
-        AbstractOpenApiResource.addRestControllers(MockApiBuilder.MockResultMethodHolder.class);
+        AbstractOpenApiResource.addRestControllers(MockApiRegister.MockParamsMethodHolder.class);
+        AbstractOpenApiResource.addRestControllers(MockApiRegister.MockResultMethodHolder.class);
+        AbstractOpenApiResource.addRestControllers(MyOtherApiRecord.class);
     }
 
     @Bean

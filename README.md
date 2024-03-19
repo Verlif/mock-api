@@ -32,6 +32,36 @@ public BaseResult<User> getById(Integer id) {
 **MockApi**通过扫描接口注解获取接口信息，根据获得的信息注册新接口到请求路由表，并指向新方法。
 因此在访问模拟接口时，服务将不会调用到您的实际方法代码，而是使用**MockApi**的数据生成逻辑，这对您的业务不会造成任何影响。
 
+也正因此，开发者甚至可以直接添加普通方法，例如这样：
+
+```java
+@Component
+@AutoConfigureBefore(MockApiBuilder.class)
+public class MyOtherApiRecord {
+
+    @Autowired
+    private PathRecorder pathRecorder;
+
+    @PostConstruct
+    public void otherRecord() {
+        // 添加此对象的所有当前类定义的public方法，并返回方法返回值。
+        pathRecorder.add(PathRecorder.Path.EMPTY, PathRecorder.Path.generate(this, PathRecorder.MethodSign.RESULT));
+    }
+
+    @MockResult(methods = RequestMethod.GET)
+    @ResponseBody
+    public String wuhu() {
+        return "123";
+    }
+
+    @MockResult
+    @ResponseBody
+    public String mock() {
+        return "mockTest";
+    }
+}
+```
+
 ## 简单使用
 
 只需要在接口上配置一个注解，即可生成此接口的**mock接口**用于返回测试数据：
