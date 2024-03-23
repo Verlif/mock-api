@@ -8,12 +8,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConditionalOnProperty(prefix = "mockapi.swagger", value = "enabled", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "mock-api.swagger", value = "enabled", matchIfMissing = true)
 public class OpenApiRegister {
 
     public OpenApiRegister() {
-        AbstractOpenApiResource.addRestControllers(MockApiRegister.MockParamsMethodHolder.class);
-        AbstractOpenApiResource.addRestControllers(MockApiRegister.MockResultMethodHolder.class);
+        AbstractOpenApiResource.addRestControllers(MockApiRegister.MockMethodHolder.class);
         AbstractOpenApiResource.addRestControllers(MyOtherApiRecord.class);
     }
 

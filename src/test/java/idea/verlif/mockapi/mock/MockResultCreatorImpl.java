@@ -4,6 +4,7 @@ import idea.verlif.mock.data.MockDataCreator;
 import idea.verlif.mock.data.config.MockDataConfig;
 import idea.verlif.mock.data.creator.InstanceCreator;
 import idea.verlif.mock.data.creator.data.IntegerRandomCreator;
+import idea.verlif.mockapi.anno.ConditionalOnMockEnabled;
 import idea.verlif.mockapi.core.RequestPack;
 import idea.verlif.mockapi.core.creator.MockResultCreator;
 import idea.verlif.mockapi.global.domain.User;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Component;
 import java.util.Random;
 
 @Component
+@ConditionalOnMockEnabled
 public class MockResultCreatorImpl implements MockResultCreator, InitializingBean {
 
     @Autowired
@@ -49,18 +51,14 @@ public class MockResultCreatorImpl implements MockResultCreator, InitializingBea
                     private final Random random = new Random();
 
                     @Override
-                    public Class<?> matched() {
-                        return BaseResult.class;
-                    }
-
-                    @Override
                     public BaseResult<?> newInstance(MockDataCreator mockDataCreator) {
                         if (random.nextInt(10) > 1) {
                             return new OkResult<>();
-                        } else return new FailResult<>(ResultCode.FAILURE.getMsg(), "");
+                        } else return FailResult.empty();
                     }
                 });
         creator.getConfig()
+                .useSetter(true)
                 .arraySize(10);
     }
 }

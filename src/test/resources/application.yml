@@ -8,3 +8,7 @@ spring:
 logging:
   level:
     idea.verlif.mockapi: DEBUG
+
+mock-api:
+  enabled: true
+  path-strategy: replace

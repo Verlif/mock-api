@@ -1,5 +1,6 @@
 package idea.verlif.mockapi.config;
 
+import idea.verlif.mockapi.anno.ConditionalOnMockEnabled;
 import idea.verlif.mockapi.core.MockItem;
 import idea.verlif.reflection.domain.SFunction;
 import idea.verlif.reflection.util.MethodUtil;
@@ -15,6 +16,7 @@ import java.util.function.Predicate;
  * 路径记录
  */
 @Component
+@ConditionalOnMockEnabled
 public class PathRecorder implements Iterable<PathRecorder.Path> {
 
     private final List<Path> keys;
@@ -177,6 +179,10 @@ public class PathRecorder implements Iterable<PathRecorder.Path> {
 
         public void setRequestMethods(RequestMethod[] requestMethods) {
             this.requestMethods = requestMethods;
+        }
+
+        public void setRequestMethods(RequestMethod requestMethod) {
+            this.requestMethods = new RequestMethod[]{requestMethod};
         }
 
         public Path requestMethods(RequestMethod... requestMethods) {

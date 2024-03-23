@@ -1,6 +1,6 @@
 package idea.verlif.mockapi.anno;
 
-import idea.verlif.mockapi.config.MockApiConfig;
+import idea.verlif.mockapi.config.MockApiBeanConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -14,7 +14,7 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Configuration
 @Documented
-@Import({MockApiConfig.class})
-@ConditionalOnProperty(prefix = "mockapi", value = "enabled", matchIfMissing = true)
+@Import({MockApiBeanConfig.class})
+@ConditionalOnProperty(prefix = "mock-api", value = "enabled", matchIfMissing = true)
 public @interface EnableMockApi {
 }

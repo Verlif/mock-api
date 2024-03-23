@@ -3,6 +3,7 @@ package idea.verlif.mockapi.pool;
 import idea.verlif.mock.data.MockDataCreator;
 import idea.verlif.mock.data.config.FieldDataPool;
 import idea.verlif.mockapi.MockApiException;
+import idea.verlif.mockapi.anno.ConditionalOnMockEnabled;
 import idea.verlif.parser.ParamParserService;
 import idea.verlif.reflection.domain.ClassGrc;
 import idea.verlif.reflection.domain.FieldGrc;
@@ -23,8 +24,9 @@ import java.util.regex.Pattern;
  * Yaml数据加载池
  */
 @Configuration
-@ConfigurationProperties(prefix = "mockapi.data")
-@ConditionalOnProperty(prefix = "mockapi.data", value = "enabled", matchIfMissing = true)
+@ConditionalOnMockEnabled
+@ConfigurationProperties(prefix = "mock-api.data")
+@ConditionalOnProperty(prefix = "mock-api.data", value = "enabled", matchIfMissing = true)
 public class YamlDataPool extends FieldDataPool {
 
     private List<DataInfo> pool;

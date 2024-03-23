@@ -1,6 +1,21 @@
 # MockApi
 
-模拟接口，能够在真实接口的基础上生成对应的模拟接口，不通过接口方法而直接返回模拟值。
+模拟接口，能够在真实接口或是任何方法上生成对应的模拟接口，不触发业务逻辑而直接返回模拟值。
+
+适合以下场景：
+
+- 产品DEMO，需要大量随机数据，并会随时更新。
+- 临时接口，用于做联通测试与数据格式对齐。
+- 接口文档生成，直接提供入参与出参格式及格式样例数据，更加直观。
+
+特点：
+
+- 使用方便，使用最简单的侵入方式，只需要一个注解即可生成模拟接口并直接调用。
+- 无需关心数据格式，开发者只用关心自己的接口数据格式，不需要手动对模拟接口的数据进行格式录入，**MockApi**会在每次运行时动态匹配对应的数据格式。
+- 多样的数据控制，使用 [数据池配置](docs/配置文件.md) 能非常快速方便地控制模拟数据的数据内容，也可以通过代码的方式精准控制。
+- 学习成本低，模拟接口被注入到`RequestMappingHandlerMapping`中，允许开发者按照默认的方式管理生成的模拟接口，而不需要学习新的规范规则。
+
+## 举例
 
 例如你有一个这样的接口：
 
@@ -11,7 +26,7 @@ public BaseResult<User> getById(Integer id) {
 }
 ```
 
-在访问时因为没有实际业务代码，只会返回`null`，而使用**MockApi**，则会返回如下内容：
+在访问时因为没有实际业务代码，只会返回`null`，而使用**MockApi**则会返回如下内容：
 
 ```json
 {
@@ -25,7 +40,7 @@ public BaseResult<User> getById(Integer id) {
 }
 ```
 
-相比较与一般的数据构造器，**MockApi**是自适应的，当接口返回值发生变化时不需要开发者进行任何调整，模拟接口会自动返回对应结构数据。
+相比较与一般的数据构造器，**MockApi**是自适应的，当接口返回值发生变化时不需要开发者进行任何调整，模拟接口会自动返回对应结构数据，几乎实现一劳永逸。
 
 ## 工具原理
 
@@ -36,35 +51,53 @@ public BaseResult<User> getById(Integer id) {
 
 ```java
 @Component
+@ConditionalOnMockEnabled
 @AutoConfigureBefore(MockApiBuilder.class)
 public class MyOtherApiRecord {
 
-    @Autowired
-    private PathRecorder pathRecorder;
+   @Autowired
+   private PathRecorder pathRecorder;
+   @Autowired
+   private HelloController helloController;
 
-    @PostConstruct
-    public void otherRecord() {
-        // 添加此对象的所有当前类定义的public方法，并返回方法返回值。
-        pathRecorder.add(PathRecorder.Path.EMPTY, PathRecorder.Path.generate(this, PathRecorder.MethodSign.RESULT));
-    }
+   @PostConstruct
+   public void otherRecord() {
+      // 将当前类定义的所有公共方法添加到构建目录
+      pathRecorder.add(PathRecorder.Path.EMPTY, PathRecorder.Path.generate(this, PathRecorder.MethodSign.RESULT));
+      // 手动将controller接口添加到构建目录，实现非侵入式构建
+      PathRecorder.Path[] paths = PathRecorder.Path.generate(
+              helloController,
+              (Predicate<Method>) m -> Modifier.isPublic(m.getModifiers()) && m.getDeclaringClass() == HelloController.class,
+              PathRecorder.MethodSign.RESULT);
+      // 对所有helloController下的模拟接口进行配置
+      for (PathRecorder.Path path : paths) {
+         // 开启模拟接口访问日志
+         path.setMockItem(new MockItem(true, null, null, null));
+         // 只提供GET方式的访问
+         path.setRequestMethods(RequestMethod.GET);
+      }
+      pathRecorder.add(PathRecorder.Path.EMPTY, paths);
+   }
 
-    @MockResult(methods = RequestMethod.GET)
-    @ResponseBody
-    public String wuhu() {
-        return "123";
-    }
+   @MockResult(methods = RequestMethod.GET)
+   @ResponseBody
+   public String wuhu() {
+      return "123";
+   }
 
-    @MockResult
-    @ResponseBody
-    public String mock() {
-        return "mockTest";
-    }
+   @MockResult
+   @ResponseBody
+   public String mock() {
+      return "mockTest";
+   }
 }
 ```
 
 ## 简单使用
 
-只需要在接口上配置一个注解，即可生成此接口的**mock接口**用于返回测试数据：
+### 侵入式
+
+侵入式的方式最为简单，只需要在接口上配置一个注解，即可生成此接口的**mock接口**用于返回测试数据：
 
 - `@MockParams` - 生成入参数据模拟，访问此接口可返回接口入参随机数据。
 - `@MockResult` - 生成出参数据模拟，访问此接口可返回方法返回值模拟数据。
@@ -80,7 +113,7 @@ public BaseResult<User> getById(Integer id) {
 }
 ```
 
-此时访问`/id`则会访问方法而返回`null`，访问生成的`/params/id`则会返回一个随机数，访问`/mock/id`则会返回以下数据：
+此时访问`/id`则会访问方法而返回`null`，访问生成的`/params/id`则会返回一个`Map`，其中的包括**key**为**id**的随机数，访问`/mock/id`则会返回以下数据：
 
 ```json
 {
@@ -94,11 +127,15 @@ public BaseResult<User> getById(Integer id) {
 }
 ```
 
+### 非侵入式
+
+非侵入式需要用到`PathRecorder`，这是需要构造虚拟地址的记录，只需要向其中`add`方法即可由**MockApi**生成对于的虚拟接口，例如在[工具原理](#工具原理)中提到的方式。
+
 ## 配置文件
 
 配置文件说明请参考 [配置文件](docs/配置文件.md)
 
-推荐使用配置文件的方式进行数据池配置。
+推荐使用配置文件的方式进行数据池配置进行随机数据控制。
 
 ## 开发文档
 
@@ -174,7 +211,7 @@ public BaseResult<User> getById(Integer id) {
 
 5. 进行结果**mock**
 
-   访问`127.0.0.1:8080/mock/user`，则调用`getById`的**mock**方法，并返回以下结果：
+   使用**GET**方式访问`127.0.0.1:8080/mock/user`（在默认虚拟地址生成器情况下，也可自定义地址生成器），并会返回以下结果：
    
    ```json
    {

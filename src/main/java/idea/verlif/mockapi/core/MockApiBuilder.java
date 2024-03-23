@@ -1,5 +1,6 @@
 package idea.verlif.mockapi.core;
 
+import idea.verlif.mockapi.anno.ConditionalOnMockEnabled;
 import idea.verlif.mockapi.anno.MockParams;
 import idea.verlif.mockapi.anno.MockResult;
 import idea.verlif.mockapi.config.PathRecorder;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Configuration
+@ConditionalOnMockEnabled
 public class MockApiBuilder {
 
     @Autowired
@@ -74,7 +76,6 @@ public class MockApiBuilder {
         for (String value : source.getPatternValues()) {
             PathRecorder.Path targetPath = new PathRecorder.Path(value, set);
             targetPath.setMethod(method, handler, methodSign);
-            targetPath.setMockItem(mockItem);
             pathRecorder.add(new PathRecorder.Path(value, set), targetPath);
         }
     }

@@ -16,7 +16,7 @@ public class MyMockLogger implements MockLogger {
 
     @Override
     public void log(RequestPack pack, Object methodHandle, Method method, Object result) {
-        Logger logger = LoggerFactory.getLogger(methodHandle.getClass());
+        Logger logger = LoggerFactory.getLogger(method.getDeclaringClass());
         String s = null;
         if (result != null) {
             try {

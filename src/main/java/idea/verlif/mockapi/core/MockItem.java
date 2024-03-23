@@ -32,10 +32,10 @@ public class MockItem {
     }
 
     public MockItem(boolean log, String config, String result, Class<?> resultType) {
-        this.log = log;
-        this.config = config;
-        this.result = result;
-        this.resultType = resultType;
+        setLog(log);
+        setConfig(config);
+        setResult(result);
+        setResultType(resultType);
     }
 
     public boolean isLog() {
@@ -51,6 +51,9 @@ public class MockItem {
     }
 
     public void setConfig(String config) {
+        if (config == null) {
+            config = EMPTY;
+        }
         this.config = config;
     }
 
@@ -59,6 +62,9 @@ public class MockItem {
     }
 
     public void setResult(String result) {
+        if (result == null) {
+            result = EMPTY;
+        }
         this.result = result;
     }
 
