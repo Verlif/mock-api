@@ -1,7 +1,7 @@
-package idea.verlif.mockapi.controller;
+package idea.verlif.test.controller;
 
 import idea.verlif.mockapi.anno.MockResult;
-import idea.verlif.mockapi.global.domain.User;
+import idea.verlif.test.global.domain.User;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.*;
 

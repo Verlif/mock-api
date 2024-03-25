@@ -1,4 +1,4 @@
-package idea.verlif.mockapi.config;
+package idea.verlif.test.config;
 
 import idea.verlif.mockapi.core.MockApiRegister;
 import org.springdoc.api.AbstractOpenApiResource;

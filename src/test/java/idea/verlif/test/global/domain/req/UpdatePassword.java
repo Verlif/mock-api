@@ -1,4 +1,4 @@
-package idea.verlif.mockapi.global.domain.req;
+package idea.verlif.test.global.domain.req;
 
 /**
  * @author Verlif

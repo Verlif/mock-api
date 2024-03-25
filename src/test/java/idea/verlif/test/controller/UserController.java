@@ -1,11 +1,11 @@
-package idea.verlif.mockapi.controller;
+package idea.verlif.test.controller;
 
 import idea.verlif.mockapi.anno.MockParams;
 import idea.verlif.mockapi.anno.MockResult;
-import idea.verlif.mockapi.global.domain.User;
-import idea.verlif.mockapi.global.domain.query.UserQuery;
-import idea.verlif.mockapi.global.result.BaseResult;
-import idea.verlif.mockapi.global.result.ext.OkResult;
+import idea.verlif.test.global.domain.User;
+import idea.verlif.test.global.domain.query.UserQuery;
+import idea.verlif.test.global.result.BaseResult;
+import idea.verlif.test.global.result.ext.OkResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 

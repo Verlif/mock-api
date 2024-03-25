@@ -1,7 +1,7 @@
-package idea.verlif.mockapi.global.result.ext;
+package idea.verlif.test.global.result.ext;
 
-import idea.verlif.mockapi.global.result.BaseResult;
-import idea.verlif.mockapi.global.result.ResultCode;
+import idea.verlif.test.global.result.BaseResult;
+import idea.verlif.test.global.result.ResultCode;
 
 /**
  * @author Verlif

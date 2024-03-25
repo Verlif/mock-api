@@ -1,8 +1,6 @@
-package idea.verlif.mockapi;
+package idea.verlif.test;
 
-import idea.verlif.mockapi.config.MyOtherApiRecord;
-import idea.verlif.mockapi.config.PathRecorder;
-import idea.verlif.mockapi.core.RequestPack;
+import idea.verlif.test.config.MyOtherApiRecord;
 import idea.verlif.reflection.util.MethodUtil;
 import org.junit.Test;
 

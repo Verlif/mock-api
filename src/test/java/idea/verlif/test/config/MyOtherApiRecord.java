@@ -1,8 +1,9 @@
-package idea.verlif.mockapi.config;
+package idea.verlif.test.config;
 
 import idea.verlif.mockapi.anno.ConditionalOnMockEnabled;
 import idea.verlif.mockapi.anno.MockResult;
-import idea.verlif.mockapi.controller.HelloController;
+import idea.verlif.mockapi.config.PathRecorder;
+import idea.verlif.test.controller.HelloController;
 import idea.verlif.mockapi.core.MockApiBuilder;
 import idea.verlif.mockapi.core.MockItem;
 import org.springframework.beans.factory.annotation.Autowired;

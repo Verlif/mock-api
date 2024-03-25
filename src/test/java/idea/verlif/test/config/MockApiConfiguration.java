@@ -1,4 +1,4 @@
-package idea.verlif.mockapi.config;
+package idea.verlif.test.config;
 
 import idea.verlif.mock.data.config.MockDataConfig;
 import idea.verlif.mock.data.config.SizeCreator;

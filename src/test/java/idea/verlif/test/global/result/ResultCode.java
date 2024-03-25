@@ -1,4 +1,4 @@
-package idea.verlif.mockapi.global.result;
+package idea.verlif.test.global.result;
 
 /**
  * @author Verlif

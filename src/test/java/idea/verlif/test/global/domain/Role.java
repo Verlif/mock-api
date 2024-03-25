@@ -1,4 +1,4 @@
-package idea.verlif.mockapi.global.domain;
+package idea.verlif.test.global.domain;
 
 import java.io.Serializable;
 

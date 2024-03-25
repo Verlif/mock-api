@@ -1,8 +1,9 @@
-package idea.verlif.mockapi.log;
+package idea.verlif.test.log;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import idea.verlif.mockapi.core.RequestPack;
+import idea.verlif.mockapi.log.MockLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

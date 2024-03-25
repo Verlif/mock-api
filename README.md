@@ -161,20 +161,7 @@ public BaseResult<User> getById(Integer id) {
 
    **version**  [![](https://jitpack.io/v/Verlif/mock-api.svg)](https://jitpack.io/#Verlif/mock-api)
 
-3. 添加`@EnableMockApi`注解启用
-
-   ```java
-   @EnableMockApi
-   @SpringBootApplication
-   public class Application extends SpringBootServletInitializer {
-   
-       public static void main(String[] args) {
-           SpringApplication.run(Application.class, args);
-       }
-   }
-   ```
-
-4. 在需要**mock**的**controller类**上或是**接口方法**上添加`@MockResult`注解
+3. 在需要**mock**的**controller类**上或是**接口方法**上添加`@MockResult`注解
 
    注解采用就近原则的方式生效。
 
@@ -209,7 +196,7 @@ public BaseResult<User> getById(Integer id) {
    }
    ```
 
-5. 进行结果**mock**
+4. 进行结果**mock**
 
    使用**GET**方式访问`127.0.0.1:8080/mock/user`（在默认虚拟地址生成器情况下，也可自定义地址生成器），并会返回以下结果：
    

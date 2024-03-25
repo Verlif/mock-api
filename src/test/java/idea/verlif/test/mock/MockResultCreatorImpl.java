@@ -1,4 +1,4 @@
-package idea.verlif.mockapi.mock;
+package idea.verlif.test.mock;
 
 import idea.verlif.mock.data.MockDataCreator;
 import idea.verlif.mock.data.config.MockDataConfig;
@@ -7,11 +7,10 @@ import idea.verlif.mock.data.creator.data.IntegerRandomCreator;
 import idea.verlif.mockapi.anno.ConditionalOnMockEnabled;
 import idea.verlif.mockapi.core.RequestPack;
 import idea.verlif.mockapi.core.creator.MockResultCreator;
-import idea.verlif.mockapi.global.domain.User;
-import idea.verlif.mockapi.global.result.BaseResult;
-import idea.verlif.mockapi.global.result.ResultCode;
-import idea.verlif.mockapi.global.result.ext.FailResult;
-import idea.verlif.mockapi.global.result.ext.OkResult;
+import idea.verlif.test.global.domain.User;
+import idea.verlif.test.global.result.BaseResult;
+import idea.verlif.test.global.result.ext.FailResult;
+import idea.verlif.test.global.result.ext.OkResult;
 import idea.verlif.reflection.domain.ClassGrc;
 import idea.verlif.reflection.domain.MethodGrc;
 import idea.verlif.reflection.util.MethodUtil;

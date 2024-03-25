@@ -29,6 +29,8 @@ import java.util.regex.Pattern;
 @ConditionalOnProperty(prefix = "mock-api.data", value = "enabled", matchIfMissing = true)
 public class YamlDataPool extends FieldDataPool {
 
+    private static final String MATCH_REGEX = ".*";
+
     private List<DataInfo> pool;
     private final Map<Class<?>, FieldDataPool> fieldDataPoolMap;
 
@@ -53,21 +55,23 @@ public class YamlDataPool extends FieldDataPool {
     public void initData() throws Exception {
         mockDataCreator.fieldDataPool(this);
         mockDataCreator.getConfig().fieldDataPool(this);
-        for (DataInfo dataInfo : pool) {
-            if (!dataInfo.isEnabled()) {
-                continue;
-            }
-            String belongs = dataInfo.belongs;
-            // 所属类为空则进行通用配置
-            if (belongs == null || belongs.isEmpty()) {
-                toDataPool(this, dataInfo);
-            } else {
-                // 聚集类型数据
-                String[] belongClasses = belongs.split(",");
-                for (String belongClass : belongClasses) {
-                    Class<?> cla = parseClass(belongClass);
-                    FieldDataPool fieldDataPool = fieldDataPoolMap.computeIfAbsent(cla, cl -> new FieldDataPool());
-                    toDataPool(fieldDataPool, dataInfo);
+        if (pool != null) {
+            for (DataInfo dataInfo : pool) {
+                if (!dataInfo.isEnabled()) {
+                    continue;
+                }
+                String belongs = dataInfo.belongs;
+                // 所属类为空则进行通用配置
+                if (belongs == null || belongs.isEmpty()) {
+                    toDataPool(this, dataInfo);
+                } else {
+                    // 聚集类型数据
+                    String[] belongClasses = belongs.split(",");
+                    for (String belongClass : belongClasses) {
+                        Class<?> cla = parseClass(belongClass);
+                        FieldDataPool fieldDataPool = fieldDataPoolMap.computeIfAbsent(cla, cl -> new FieldDataPool());
+                        toDataPool(fieldDataPool, dataInfo);
+                    }
                 }
             }
         }
@@ -87,9 +91,10 @@ public class YamlDataPool extends FieldDataPool {
             PatternValues<Object> pv = new PatternValues<>();
             for (String name : nameStr.split(",")) {
                 if (name.isEmpty()) {
-                    continue;
+                    pv.values(parseValues(dataInfo.getValues(), target), MATCH_REGEX, Pattern.CASE_INSENSITIVE);
+                } else {
+                    pv.values(parseValues(dataInfo.getValues(), target), name.trim(), Pattern.CASE_INSENSITIVE);
                 }
-                pv.values(parseValues(dataInfo.getValues(), target), name.trim(), Pattern.CASE_INSENSITIVE);
             }
             dataPool.addPatternValues(target, pv);
         }
