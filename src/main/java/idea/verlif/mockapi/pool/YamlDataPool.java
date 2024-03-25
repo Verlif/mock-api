@@ -31,6 +31,7 @@ public class YamlDataPool extends FieldDataPool {
 
     private static final String MATCH_REGEX = ".*";
 
+    private boolean enabled;
     private List<DataInfo> pool;
     private final Map<Class<?>, FieldDataPool> fieldDataPoolMap;
 
@@ -41,6 +42,14 @@ public class YamlDataPool extends FieldDataPool {
 
     public YamlDataPool() {
         fieldDataPoolMap = new HashMap<>();
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public List<DataInfo> getPool() {
