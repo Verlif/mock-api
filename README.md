@@ -10,14 +10,14 @@
 
 特点：
 
-- 使用方便，使用最简单的侵入方式，只需要一个注解即可生成模拟接口并直接调用。
-- 无需关心数据格式，开发者只用关心自己的接口数据格式，不需要手动对模拟接口的数据进行格式录入，**MockApi**会在每次运行时动态匹配对应的数据格式。
+- 使用方便，使用最简单的**侵入**方式，只需要一个注解即可生成模拟接口并直接调用。亦或是使用**非侵入**方式，直接使用`PathRecorder`来添加目标对象或方法。
+- 专注业务开发而非数据生成。在完成方法注册后，**MockApi**会在每次运行时动态匹配对应的数据格式，不需要开发者更改结构后手动调整。
 - 多样的数据控制，使用 [数据池配置](docs/配置文件.md) 能非常快速方便地控制模拟数据的数据内容，也可以通过代码的方式精准控制。
 - 学习成本低，模拟接口被注入到`RequestMappingHandlerMapping`中，允许开发者按照默认的方式管理生成的模拟接口，而不需要学习新的规范规则。
 
 ## 举例
 
-例如你有一个这样的接口：
+例如你有一个这样的接口方法：
 
 ```java
 @GetMapping
@@ -28,17 +28,7 @@ public BaseResult<User> getById(Integer id) {
 
 在访问时因为没有实际业务代码，只会返回`null`，而使用**MockApi**则会返回如下内容：
 
-```json
-{
-   "code": 201,
-   "msg": "123",
-   "data": {
-      "userId": 681,
-      "nickname": "小羊",
-      "roleKey": "USER"
-   }
-}
-```
+![生成数据](/docs/imgs/数据对比.png)
 
 相比较与一般的数据构造器，**MockApi**是自适应的，当接口返回值发生变化时不需要开发者进行任何调整，模拟接口会自动返回对应结构数据，几乎实现一劳永逸。
 
@@ -67,16 +57,21 @@ public class MyOtherApiRecord {
       // 手动将controller接口添加到构建目录，实现非侵入式构建
       PathRecorder.Path[] paths = PathRecorder.Path.generate(
               helloController,
-              (Predicate<Method>) m -> Modifier.isPublic(m.getModifiers()) && m.getDeclaringClass() == HelloController.class,
+              m -> Modifier.isPublic(m.getModifiers()) && m.getDeclaringClass() == HelloController.class,
               PathRecorder.MethodSign.RESULT);
       // 对所有helloController下的模拟接口进行配置
       for (PathRecorder.Path path : paths) {
+         // 增加接口前缀
+         path.setPath("hello/" + path.getPath());
          // 开启模拟接口访问日志
          path.setMockItem(new MockItem(true, null, null, null));
          // 只提供GET方式的访问
          path.setRequestMethods(RequestMethod.GET);
       }
       pathRecorder.add(PathRecorder.Path.EMPTY, paths);
+      // 增加接口的虚拟接口
+      PathRecorder.Path[] apiPaths = PathRecorder.Path.generate(UserApi.class, PathRecorder.MethodSign.RESULT);
+      pathRecorder.add(PathRecorder.Path.EMPTY, apiPaths);
    }
 
    @MockResult(methods = RequestMethod.GET)
@@ -89,6 +84,13 @@ public class MyOtherApiRecord {
    @ResponseBody
    public String mock() {
       return "mockTest";
+   }
+   
+   public interface UserApi {
+
+      @MockResult(result = "123", path = "312")
+      User getById(String id);
+
    }
 }
 ```
@@ -117,12 +119,30 @@ public BaseResult<User> getById(Integer id) {
 
 ```json
 {
-   "code": 201,
-   "msg": "123",
+   "code": 200,
+   "msg": "有意思的",
    "data": {
-      "userId": 681,
+      "userId": 861,
       "nickname": "小羊",
-      "roleKey": "USER"
+      "roleKeys": [
+         "USER",
+         "VISITOR",
+         "ADMIN"
+      ],
+      "favorites": [
+         {
+            "name": "梨子",
+            "type": "错误的"
+         },
+         {
+            "name": "苹果",
+            "type": "有意思的"
+         },
+         {
+            "name": "梨子",
+            "type": "有意思的"
+         }
+      ]
    }
 }
 ```

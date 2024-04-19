@@ -2,6 +2,7 @@ package idea.verlif.test.config;
 
 import idea.verlif.mock.data.config.MockDataConfig;
 import idea.verlif.mock.data.config.SizeCreator;
+import org.apache.commons.lang3.RandomUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,7 +13,7 @@ public class MockApiConfiguration {
 
     @Bean
     public MockDataConfig a() {
-        return new MockDataConfig().autoCascade(true).arraySize(5);
+        return new MockDataConfig().autoCascade(true).arraySize(cla -> RandomUtils.nextInt(1, 5));
     }
 
     @Bean

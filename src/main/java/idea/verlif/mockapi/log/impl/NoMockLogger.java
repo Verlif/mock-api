@@ -8,6 +8,6 @@ import java.lang.reflect.Method;
 public class NoMockLogger implements MockLogger {
 
     @Override
-    public void log(RequestPack pack, Object methodHandle, Method method, Object result) {
+    public void log(RequestPack pack, Method method, Object result) {
     }
 }

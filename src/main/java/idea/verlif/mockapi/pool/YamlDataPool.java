@@ -26,12 +26,19 @@ import java.util.regex.Pattern;
 @Configuration
 @ConditionalOnMockEnabled
 @ConfigurationProperties(prefix = "mock-api.data")
-@ConditionalOnProperty(prefix = "mock-api.data", value = "enabled", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "mock-api.data", value = "enabled", havingValue = "true", matchIfMissing = true)
 public class YamlDataPool extends FieldDataPool {
 
     private static final String MATCH_REGEX = ".*";
 
+    /**
+     * 是否开启数据池
+     */
     private boolean enabled;
+
+    /**
+     * 数据池列表
+     */
     private List<DataInfo> pool;
     private final Map<Class<?>, FieldDataPool> fieldDataPoolMap;
 

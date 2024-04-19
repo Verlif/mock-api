@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 public class MockApiConfig {
 
     /**
-     * 是否开启
+     * 是否开启MockApi的虚拟接口服务
      */
     private boolean enabled;
 
@@ -34,7 +34,13 @@ public class MockApiConfig {
     }
 
     public enum PathStrategy {
+        /**
+         * 忽略重复地址
+         */
         IGNORED,
+        /**
+         * 替换已有的重复地址
+         */
         REPLACE
     }
 }

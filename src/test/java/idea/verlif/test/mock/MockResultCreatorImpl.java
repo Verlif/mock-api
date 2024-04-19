@@ -30,7 +30,7 @@ public class MockResultCreatorImpl implements MockResultCreator, InitializingBea
     @Override
     public Object mock(RequestPack pack, MockDataCreator creator, MockDataConfig config) {
         try {
-            MethodGrc methodGrc = MethodUtil.getMethodGrc(pack.getOldMethod(), pack.getMethodHandle().getClass());
+            MethodGrc methodGrc = MethodUtil.getMethodGrc(pack.getOldMethod());
             ClassGrc result = methodGrc.getResult();
             if (result.getTarget() == void.class) {
                 return null;

@@ -205,26 +205,50 @@ public class PathRecorder implements Iterable<PathRecorder.Path> {
         /**
          * 由对象的类生成访问路径信息
          *
-         * @param handle   目标类的实例对象
          * @param function 目标方法lambda表达式
          * @return 访问路径数组
          */
-        public static <T, R> Path generate(Object handle, SFunction<T, R> function, MethodSign methodSign) {
+        public static <T, R> Path generate(SFunction<T, R> function, MethodSign methodSign) {
             Method method = MethodUtil.getMethodFromLambda(function);
-            return generate(handle, method, methodSign);
+            return generate(method, methodSign);
         }
 
         /**
          * 由对象的类生成访问路径信息
          *
-         * @param handle 目标类的实例对象
          * @param method 目标方法
          * @return 访问路径数组
          */
-        public static Path generate(Object handle, Method method, MethodSign methodSign) {
+        public static Path generate(Method method, MethodSign methodSign) {
             Path path = new Path(method.getName());
-            path.setMethod(method, handle, methodSign);
+            path.setMethod(method, null, methodSign);
             return path;
+        }
+
+        /**
+         * 对类的所有方法生成对应的访问路径
+         *
+         * @param targetClass 目标类
+         * @param filter      类方法过滤器
+         * @return 访问路径数组
+         */
+        public static Path[] generate(Class<?> targetClass, Predicate<Method> filter, MethodSign methodSign) {
+            List<Method> methods = MethodUtil.getAllMethods(targetClass, filter);
+            Path[] paths = new Path[methods.size()];
+            for (int i = 0; i < methods.size(); i++) {
+                paths[i] = generate(methods.get(i), methodSign);
+            }
+            return paths;
+        }
+
+        /**
+         * 对类的所有自定义方法生成对应的访问路径
+         *
+         * @param targetClass 目标类
+         * @return 访问路径数组
+         */
+        public static Path[] generate(Class<?> targetClass, MethodSign methodSign) {
+            return generate(targetClass, m -> Modifier.isPublic(m.getModifiers()) && m.getDeclaringClass() == targetClass, methodSign);
         }
 
         /**
@@ -236,12 +260,7 @@ public class PathRecorder implements Iterable<PathRecorder.Path> {
          */
         public static Path[] generate(Object handle, Predicate<Method> filter, MethodSign methodSign) {
             Class<?> cla = handle.getClass();
-            List<Method> methods = MethodUtil.getAllMethods(cla, filter);
-            Path[] paths = new Path[methods.size()];
-            for (int i = 0; i < methods.size(); i++) {
-                paths[i] = generate(handle, methods.get(i), methodSign);
-            }
-            return paths;
+            return generate(cla, filter, methodSign);
         }
 
         /**

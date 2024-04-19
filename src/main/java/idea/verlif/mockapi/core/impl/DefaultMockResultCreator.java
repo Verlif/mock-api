@@ -16,7 +16,7 @@ public class DefaultMockResultCreator implements MockResultCreator {
     public Object mock(RequestPack pack, MockDataCreator creator, MockDataConfig config) {
         MethodGrc methodGrc;
         try {
-            methodGrc = MethodUtil.getMethodGrc(pack.getOldMethod(), pack.getMethodHandle().getClass());
+            methodGrc = MethodUtil.getMethodGrc(pack.getOldMethod());
         } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
             throw new RuntimeException(e);
         }

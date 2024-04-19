@@ -1,19 +1,29 @@
 package idea.verlif.test.global.domain;
 
 import java.io.Serializable;
+import java.util.List;
 
-/**
- * @author Verlif
- */
 public class User implements Serializable {
 
+    /**
+     * 用户ID
+     */
     private Integer userId;
 
+    /**
+     * 用户昵称
+     */
     private String nickname;
 
-    private Role.RoleKey roleKey;
+    /**
+     * 用户拥有的角色Key列表
+     */
+    private List<Role.RoleKey> roleKeys;
 
-    private Favorite favorite;
+    /**
+     * 用户喜好列表
+     */
+    private List<Favorite> favorites;
 
     public Integer getUserId() {
         return userId;
@@ -31,24 +41,20 @@ public class User implements Serializable {
         this.nickname = nickname;
     }
 
-    public Role.RoleKey getRoleKey() {
-        return roleKey;
+    public List<Role.RoleKey> getRoleKeys() {
+        return roleKeys;
     }
 
-    public void setRoleKey(String roleKey) {
-        this.roleKey = Role.RoleKey.valueOf(roleKey);
+    public void setRoleKeys(List<Role.RoleKey> roleKeys) {
+        this.roleKeys = roleKeys;
     }
 
-    public void setRoleKey(Role.RoleKey roleKey) {
-        this.roleKey = roleKey;
+    public List<Favorite> getFavorites() {
+        return favorites;
     }
 
-    public Favorite getFavorite() {
-        return favorite;
-    }
-
-    public void setFavorite(Favorite favorite) {
-        this.favorite = favorite;
+    public void setFavorites(List<Favorite> favorites) {
+        this.favorites = favorites;
     }
 
     public User() {

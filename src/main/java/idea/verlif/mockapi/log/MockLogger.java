@@ -6,5 +6,5 @@ import java.lang.reflect.Method;
 
 public interface MockLogger {
 
-    void log(RequestPack pack, Object methodHandle, Method method, Object result);
+    void log(RequestPack pack, Method method, Object result);
 }

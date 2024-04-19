@@ -16,7 +16,7 @@ public class MyMockLogger implements MockLogger {
     private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Override
-    public void log(RequestPack pack, Object methodHandle, Method method, Object result) {
+    public void log(RequestPack pack, Method method, Object result) {
         Logger logger = LoggerFactory.getLogger(method.getDeclaringClass());
         String s = null;
         if (result != null) {

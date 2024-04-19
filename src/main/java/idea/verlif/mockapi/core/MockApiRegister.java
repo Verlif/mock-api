@@ -79,7 +79,7 @@ public class MockApiRegister {
         for (int i = 0, size = pathRecorder.getSize(); i < size; i++) {
             PathRecorder.Path targetPath = pathRecorder.getValue(i);
             Method method = targetPath.getMethod();
-            if (targetPath.getHandle() != null && method != null) {
+            if (method != null) {
                 RequestMappingInfo requestMappingInfo = buildRequestMappingInfo(targetPath);
                 if (mockApiConfig.getPathStrategy() == MockApiConfig.PathStrategy.REPLACE) {
                     requestMappingHandlerMapping.unregisterMapping(requestMappingInfo);
@@ -137,7 +137,7 @@ public class MockApiRegister {
         // 重构路径
         path.setPath(resultPathGenerator.urlGenerate(path.getPath()));
         path.setRequestMethods(requestMethods);
-        path.setMethod(mockMethod, new MockMethodHolder(path.getHandle(), path.getMethod(), mockItem, mockResultCreator), path.getMethodSign());
+        path.setMethod(mockMethod, new MockMethodHolder(path.getMethod(), mockItem, mockResultCreator), path.getMethodSign());
     }
 
     /**
@@ -164,7 +164,7 @@ public class MockApiRegister {
         // 重构路径
         path.setPath(paramsPathGenerator.urlGenerate(path.getPath()));
         path.setRequestMethods(requestMethods);
-        path.setMethod(mockMethod, new MockMethodHolder(path.getHandle(), path.getMethod(), mockItem, mockParamsCreator), path.getMethodSign());
+        path.setMethod(mockMethod, new MockMethodHolder(path.getMethod(), mockItem, mockParamsCreator), path.getMethodSign());
     }
 
     /**
@@ -186,13 +186,11 @@ public class MockApiRegister {
      */
     public class MockMethodHolder {
 
-        protected final Object methodHolder;
         protected final Method oldMethod;
         protected final MockItem mockItem;
         protected final ObjectMocker objectMocker;
 
-        public MockMethodHolder(Object methodHandle, Method oldMethod, MockItem mockItem, ObjectMocker objectMocker) {
-            this.methodHolder = methodHandle;
+        public MockMethodHolder(Method oldMethod, MockItem mockItem, ObjectMocker objectMocker) {
             this.oldMethod = oldMethod;
             this.mockItem = mockItem;
             this.objectMocker = objectMocker;
@@ -211,14 +209,13 @@ public class MockApiRegister {
             Object o = mockObject(objectMocker, pack, getMockConfig(mockItem.getConfig()));
             // 日志输出
             if (mockItem.isLog()) {
-                mockLogger.log(pack, methodHolder, oldMethod, o);
+                mockLogger.log(pack, oldMethod, o);
             }
             return o;
         }
 
         protected Object mockObject(ObjectMocker objectMocker, RequestPack pack, MockDataConfig config) {
             pack.setOldMethod(oldMethod);
-            pack.setMethodHandle(methodHolder);
             return objectMocker.mock(pack, creator, config);
         }
 
