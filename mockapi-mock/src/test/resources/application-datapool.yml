@@ -1,4 +1,4 @@
-mock-api:
+mockapi:
   data:
     enabled: true
     pool:

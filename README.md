@@ -111,7 +111,7 @@ public class OtherRecorder {
 
 请移步[开发文档](/docs/3.x/开发文档.md)
 
-当然，你也可以直接使用已经定义好的`mockapi-mock`，更加方便地。
+当然，你也可以直接使用已经定义好的`mockapi-mock`。
 
 ## 使用
 
@@ -125,65 +125,17 @@ public class OtherRecorder {
 
    ```xml
    <dependency>
-       <groupId>com.github.Verlif</groupId>
-       <artifactId>mockapi</artifactId>
-       <version>${mockapi.version}</version>
+       <groupId>com.github.verlif.mockapi</groupId>
+       <artifactId>mockapi-core</artifactId>
+       <!--<artifactId>mockapi-mock</artifactId>-->
+       <version>${last-version}</version>
    </dependency>
    ```
 
-   **version**  [![](https://jitpack.io/v/Verlif/mock-api.svg)](https://jitpack.io/#Verlif/mock-api)
+   **last-version**  [![](https://jitpack.io/v/Verlif/mockapi.svg)](https://jitpack.io/#Verlif/mockapi)
 
-3. 在需要**mock**的**controller类**上或是**接口方法**上添加`@MockResult`注解
+3. 在需要**mock**的**controller类**上或是**接口方法**上添加`@MockApi`注解
 
    注解采用就近原则的方式生效。
 
-   ```java
-   @MockParams
-   @MockResult
-   @RestController
-   @RequestMapping("user")
-   public class UserController {
-   
-       @GetMapping
-       public BaseResult<User> getById(Integer id) {
-           return new OkResult<>(new User());
-       }
-   
-       @GetMapping("list")
-       public BaseResult<List<User>> getList() {
-           return new OkResult<>(new ArrayList<>());
-       }
-   
-       @MockResult
-       @PutMapping
-       public BaseResult<User> update(User user) {
-           return new OkResult<>(user);
-       }
-   
-       @DeleteMapping
-       public BaseResult<String> deleteById(Integer id) {
-           return new OkResult<>("OK");
-       }
-   
-   }
-   ```
-
-4. 进行结果**mock**
-
-   使用**GET**方式访问`127.0.0.1:8080/mock/user`（在默认虚拟地址生成器情况下，也可自定义地址生成器），并会返回以下结果：
-   
-   ```json
-   {
-       "code": 201,
-       "msg": "nk-ww",
-       "data": {
-           "userId": 4,
-           "nickname": "小红",
-           "roleKey": "VISITOR"
-       }
-   }
-   ```
-
 **完成**
-
-更多说明请参阅[使用说明](docs/使用说明.md)
