@@ -175,11 +175,9 @@ public BaseResult<User> getById(Integer id) {
    <dependency>
        <groupId>com.github.Verlif</groupId>
        <artifactId>mock-api</artifactId>
-       <version>${mockapi.version}</version>
+       <version>2.7.18-2.1</version>
    </dependency>
    ```
-
-   **version**  [![](https://jitpack.io/v/Verlif/mock-api.svg)](https://jitpack.io/#Verlif/mock-api)
 
 3. 在需要**mock**的**controller类**上或是**接口方法**上添加`@MockResult`注解
 
