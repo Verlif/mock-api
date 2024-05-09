@@ -27,11 +27,6 @@ public @interface MockResult {
     boolean log() default false;
 
     /**
-     * 配置名称
-     */
-    String config() default "";
-
-    /**
      * 配置数据
      */
     String data() default "";
