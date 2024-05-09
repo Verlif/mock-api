@@ -16,7 +16,7 @@ mock分支是为了能更快速地使用虚拟接口，并生成规范化的数�
 ```java
 @RequestMapping("test")
 @RestController
-public class TestController implements ApplicationRunner {
+public class TestController {
 
     @MockResult
     @GetMapping
@@ -29,6 +29,55 @@ public class TestController implements ApplicationRunner {
 
 这里访问`/demo/test`会返回`Hello world`，而访问`/demo/result/test`则会返回一个随机字符串。
 
-## 数据格式化
+## 数据配置
 
-数据格式化推荐使用[配置文件](../docs/3.x/配置文件.md)的方式。
+数据配置有三种方式，一种是通过直接更改全局`MockDataCreator`，这种方式更改对所有的数据生成都会生效：
+
+```java
+@Configuration
+public class MockApiConfiguration {
+
+    @Autowired
+    private MockDataCreator mockDataCreator;
+
+    @PostConstruct
+    public void resetMockDataCreator() {
+        // 对用户ID进行递增id分配
+        mockDataCreator.fieldValue(User::getUserId, new ContinuousIntPool());
+        mockDataCreator.getConfig().arraySize(cla -> RandomUtil.range(1, 5));
+    }
+}
+```
+
+一种是通过分类配置文件，这里使用`@MockResult(data = "a")`就可以使用下面的`a`方法返回的配置：
+
+```java
+@Configuration
+public class MockApiConfiguration {
+
+    @Bean
+    public MockDataConfig a() {
+        return new MockDataConfig().arraySize(cla -> RandomUtil.range(1, 5));
+    }
+
+    @Bean
+    public MockDataConfig b() {
+        return (MockDataConfig) new MockDataConfig()
+                .arraySize(cla -> RandomUtil.nextInt(3) + 2)
+                .fieldObject(String.class, "固定String");
+    }
+}
+```
+
+一种是配置文件的方式：
+
+```yaml
+mock-api:
+  data:
+    enabled: true
+    pool:
+      - types: String
+        values: 这里是mock数据, it's the mocked data.
+```
+
+具体内容可以参考[配置文件](../docs/3.x/配置文件.md)。

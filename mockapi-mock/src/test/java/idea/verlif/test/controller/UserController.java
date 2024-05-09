@@ -19,13 +19,13 @@ import java.util.List;
 @RequestMapping("user")
 public class UserController {
 
-    @MockResult(config = "a")
+    @MockResult(data = "a")
     @GetMapping
     public BaseResult<User> getById(Integer id) {
         return new OkResult<>(new User());
     }
 
-    @MockParams(path = "list", config = "b")
+    @MockParams(path = "list", data = "b")
     @GetMapping("list")
     public BaseResult<List<User>> getList(@Validated UserQuery query) {
         return new OkResult<>(new ArrayList<>());
