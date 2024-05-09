@@ -72,7 +72,7 @@ public class MockApiConfiguration {
 一种是配置文件的方式：
 
 ```yaml
-mock-api:
+mockapi:
   data:
     enabled: true
     pool:
