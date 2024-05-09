@@ -1,0 +1,10 @@
+server:
+  port: 8889
+
+logging:
+  level:
+    idea.verlif.mockapi: DEBUG
+
+mock-api:
+  enabled: true
+  path-strategy: replace

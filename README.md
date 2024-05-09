@@ -10,10 +10,11 @@
 
 特点：
 
-- 使用方便，使用最简单的**侵入**方式，只需要一个注解即可生成模拟接口并直接调用。亦或是使用**非侵入**方式，直接使用`PathRecorder`来添加目标对象或方法。
-- 专注业务开发而非数据生成。在完成方法注册后，**MockApi**会在每次运行时动态匹配对应的数据格式，不需要开发者更改结构后手动调整。
-- 多样的数据控制，使用 [数据池配置](docs/配置文件.md) 能非常快速方便地控制模拟数据的数据内容，也可以通过代码的方式精准控制。
+- 使用方便，使用注解的**侵入**方式，或是使用**非侵入**的手动注入方式来生成虚拟接口。
+- 动态结构，生成的数据随着原始方法的更新而自动更新，不需要手动维护。
 - 学习成本低，模拟接口被注入到`RequestMappingHandlerMapping`中，允许开发者按照默认的方式管理生成的模拟接口，而不需要学习新的规范规则。
+
+以下内容基于**3.x**版本，以前版本请移步[2.x](/README_2.x.md)介绍。
 
 ## 举例
 
@@ -21,145 +22,96 @@
 
 ```java
 @GetMapping
-public BaseResult<User> getById(Integer id) {
+public BaseResult<User> getById(int id) {
     return null;
 }
 ```
 
 在访问时因为没有实际业务代码，只会返回`null`，而使用**MockApi**则会返回如下内容：
 
-![生成数据](/docs/imgs/数据对比.png)
+![生成数据](/docs/3.x/imgs/数据对比.png)
+
+*这里使用了mockapi-mock组件*
 
 相比较与一般的数据构造器，**MockApi**是自适应的，当接口返回值发生变化时不需要开发者进行任何调整，模拟接口会自动返回对应结构数据，几乎实现一劳永逸。
-
-## 工具原理
-
-**MockApi**通过扫描接口注解获取接口信息，根据获得的信息注册新接口到请求路由表，并指向新方法。
-因此在访问模拟接口时，服务将不会调用到您的实际方法代码，而是使用**MockApi**的数据生成逻辑，这对您的业务不会造成任何影响。
-
-也正因此，开发者甚至可以直接添加普通方法，例如这样：
-
-```java
-@Component
-@ConditionalOnMockEnabled
-@AutoConfigureBefore(MockApiBuilder.class)
-public class MyOtherApiRecord {
-
-   @Autowired
-   private PathRecorder pathRecorder;
-   @Autowired
-   private HelloController helloController;
-
-   @PostConstruct
-   public void otherRecord() {
-      // 将当前类定义的所有公共方法添加到构建目录
-      pathRecorder.add(PathRecorder.Path.EMPTY, PathRecorder.Path.generate(this, PathRecorder.MethodSign.RESULT));
-      // 手动将controller接口添加到构建目录，实现非侵入式构建
-      PathRecorder.Path[] paths = PathRecorder.Path.generate(
-              helloController,
-              m -> Modifier.isPublic(m.getModifiers()) && m.getDeclaringClass() == HelloController.class,
-              PathRecorder.MethodSign.RESULT);
-      // 对所有helloController下的模拟接口进行配置
-      for (PathRecorder.Path path : paths) {
-         // 增加接口前缀
-         path.setPath("hello/" + path.getPath());
-         // 开启模拟接口访问日志
-         path.setMockItem(new MockItem(true, null, null, null));
-         // 只提供GET方式的访问
-         path.setRequestMethods(RequestMethod.GET);
-      }
-      pathRecorder.add(PathRecorder.Path.EMPTY, paths);
-      // 增加接口的虚拟接口
-      PathRecorder.Path[] apiPaths = PathRecorder.Path.generate(UserApi.class, PathRecorder.MethodSign.RESULT);
-      pathRecorder.add(PathRecorder.Path.EMPTY, apiPaths);
-   }
-
-   @MockResult(methods = RequestMethod.GET)
-   @ResponseBody
-   public String wuhu() {
-      return "123";
-   }
-
-   @MockResult
-   @ResponseBody
-   public String mock() {
-      return "mockTest";
-   }
-   
-   public interface UserApi {
-
-      @MockResult(result = "123", path = "312")
-      User getById(String id);
-
-   }
-}
-```
 
 ## 简单使用
 
 ### 侵入式
 
-侵入式的方式最为简单，只需要在接口上配置一个注解，即可生成此接口的**mock接口**用于返回测试数据：
-
-- `@MockParams` - 生成入参数据模拟，访问此接口可返回接口入参随机数据。
-- `@MockResult` - 生成出参数据模拟，访问此接口可返回方法返回值模拟数据。
-
-例如前面提到的接口：
+侵入式的方式最为简单，只需要新建一个`MyObjectMocker`类去实现`ObjectMocker`：
 
 ```java
-@MockParams
-@MockResult
-@GetMapping("id")
-public BaseResult<User> getById(Integer id) {
-    return null;
+public class MyObjectMocker implements ObjectMocker {
+    @Override
+    public Object mock(MockItem item, RequestPack pack) {
+        // 我们根据请求目标方法的返回值生成对应的对象，并返回实例
+        Class<?> returnType = pack.getOldMethod().getReturnType();
+        try {
+            return returnType.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
 ```
 
-此时访问`/id`则会访问方法而返回`null`，访问生成的`/params/id`则会返回一个`Map`，其中的包括**key**为**id**的随机数，访问`/mock/id`则会返回以下数据：
+随后就可以在`MockApi`接口中通过`mocker`参数使用它了：
 
-```json
-{
-   "code": 200,
-   "msg": "有意思的",
-   "data": {
-      "userId": 861,
-      "nickname": "小羊",
-      "roleKeys": [
-         "USER",
-         "VISITOR",
-         "ADMIN"
-      ],
-      "favorites": [
-         {
-            "name": "梨子",
-            "type": "错误的"
-         },
-         {
-            "name": "苹果",
-            "type": "有意思的"
-         },
-         {
-            "name": "梨子",
-            "type": "有意思的"
-         }
-      ]
-   }
+```java
+@RestController("user")
+public class UserController {
+
+    @MockApi(mocker = MyObjectMocker.class)
+    @GetMapping
+    public User getById(String id) {
+        return null;
+    }
+
+    @GetMapping("batch")
+    public List<User> add(User user) {
+        return new ArrayList<>();
+    }
 }
 ```
+
+此时我们访问`/mock`就会返回一个`User`实例而不是`null`。
 
 ### 非侵入式
 
-非侵入式需要用到`PathRecorder`，这是需要构造虚拟地址的记录，只需要向其中`add`方法即可由**MockApi**生成对于的虚拟接口，例如在[工具原理](#工具原理)中提到的方式。
+非侵入式需要用到`PathRecorder`，这是需要构造虚拟地址的记录，只需要向其中`add`方法即可由**MockApi**生成对于的虚拟接口。
 
-## 配置文件
+例如：
 
-配置文件说明请参考 [配置文件](docs/配置文件.md)
+```java
+@Component
+@AutoConfigureBefore(MockApiRegister.class)
+public class OtherRecorder {
 
-推荐使用配置文件的方式进行数据池配置进行随机数据控制。
+    @Autowired
+    private PathRecorder pathRecorder;
 
-## 开发文档
+    @PostConstruct
+    public void init() {
+        pathRecorder.add(PathRecorder.Path.generate(Test.class));
+    }
 
-需要自定义构造或是更高级的功能请参考 [开发文档](docs/开发文档.md)
+    interface Test {
+        int i();
+    }
+
+}
+```
+
+这里注意要在`MockApiRegister`注册前进行添加。
+
+这样就可以通过`/mock/test/i`来访问对`Test`接口生成的`i`虚拟方法了。
+
+### 其他更优雅的方式
+
+请移步[开发文档](/docs/3.x/开发文档.md)
+
+当然，你也可以直接使用已经定义好的`mockapi-mock`，更加方便地。
 
 ## 使用
 
@@ -174,7 +126,7 @@ public BaseResult<User> getById(Integer id) {
    ```xml
    <dependency>
        <groupId>com.github.Verlif</groupId>
-       <artifactId>mock-api</artifactId>
+       <artifactId>mockapi</artifactId>
        <version>${mockapi.version}</version>
    </dependency>
    ```
