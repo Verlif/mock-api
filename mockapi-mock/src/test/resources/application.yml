@@ -9,6 +9,6 @@ logging:
   level:
     idea.verlif.mockapi: DEBUG
 
-mock-api:
+mockapi:
   enabled: true
   path-strategy: replace

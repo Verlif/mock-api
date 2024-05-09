@@ -20,8 +20,12 @@ public class MockAnnotationHandler {
     public MockAnnotationHandler(ApplicationContext applicationContext) {
         this.mockAnnotationConvertors = new HashMap<>();
         for (MockAnnotationConvertor<?> convertor : applicationContext.getBeansOfType(MockAnnotationConvertor.class).values()) {
-            mockAnnotationConvertors.put(convertor.convertType(), convertor);
+            putConvertor(convertor);
         }
+    }
+
+    public void putConvertor(MockAnnotationConvertor<?> convertor) {
+        mockAnnotationConvertors.put(convertor.convertType(), convertor);
     }
 
     public MockItem convert(Annotation annotation) {

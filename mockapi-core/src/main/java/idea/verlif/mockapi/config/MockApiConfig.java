@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "mock-api")
+@ConfigurationProperties(prefix = "mockapi")
 public class MockApiConfig {
 
     /**

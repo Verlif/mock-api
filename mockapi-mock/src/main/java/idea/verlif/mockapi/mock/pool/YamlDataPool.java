@@ -25,8 +25,8 @@ import java.util.regex.Pattern;
  */
 @Configuration
 @ConditionalOnMockEnabled
-@ConfigurationProperties(prefix = "mock-api.data")
-@ConditionalOnProperty(prefix = "mock-api.data", value = "enabled", havingValue = "true", matchIfMissing = true)
+@ConfigurationProperties(prefix = "mockapi.data")
+@ConditionalOnProperty(prefix = "mockapi.data", value = "enabled", havingValue = "true", matchIfMissing = true)
 public class YamlDataPool extends FieldDataPool {
 
     private static final String MATCH_REGEX = ".*";

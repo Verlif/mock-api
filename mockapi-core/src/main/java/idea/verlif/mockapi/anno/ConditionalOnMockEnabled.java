@@ -12,6 +12,6 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-@ConditionalOnProperty(prefix = "mock-api", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "mockapi", name = "enabled", havingValue = "true", matchIfMissing = true)
 public @interface ConditionalOnMockEnabled {
 }

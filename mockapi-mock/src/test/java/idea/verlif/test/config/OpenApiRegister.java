@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConditionalOnProperty(prefix = "mock-api.swagger", value = "enabled", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "mockapi.swagger", value = "enabled", matchIfMissing = true)
 public class OpenApiRegister {
 
     public OpenApiRegister() {
