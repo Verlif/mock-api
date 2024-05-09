@@ -23,8 +23,4 @@ public class MockApiConvertor implements MockAnnotationConvertor<MockApi> {
         return mockItem;
     }
 
-    @Override
-    public Class<MockApi> convertType() {
-        return MockApi.class;
-    }
 }

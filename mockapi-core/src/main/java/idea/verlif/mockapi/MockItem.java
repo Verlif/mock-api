@@ -17,10 +17,19 @@ public class MockItem {
      */
     private String data;
 
+    /**
+     * 修改后的访问地址
+     */
     private String path;
 
+    /**
+     * 访问方法集
+     */
     private RequestMethod[] methods;
 
+    /**
+     * 虚拟接口数据构建器
+     */
     private ObjectMocker objectMocker;
 
     public MockItem() {

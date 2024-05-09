@@ -128,20 +128,6 @@ public class MockApiRegister {
     }
 
     /**
-     * 从方法上获取注释
-     *
-     * @param method 方法对象
-     * @return 方法标记的注释，可能为空
-     */
-    private MockApi getAnnotation(Method method) {
-        MockApi annotation = method.getAnnotation(MockApi.class);
-        if (annotation == null) {
-            annotation = method.getClass().getAnnotation(MockApi.class);
-        }
-        return annotation;
-    }
-
-    /**
      * 构建方法数据类
      */
     public class MockMethodHolder {

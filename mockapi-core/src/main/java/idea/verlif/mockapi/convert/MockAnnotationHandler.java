@@ -10,6 +10,9 @@ import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 注解管理器，管理注解处理器与转义注解的工具
+ */
 @Component
 @ConditionalOnMockEnabled
 @Import(MockApiConvertor.class)

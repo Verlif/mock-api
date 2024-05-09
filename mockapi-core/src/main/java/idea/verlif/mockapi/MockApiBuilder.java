@@ -5,6 +5,7 @@ import idea.verlif.mockapi.anno.MockApi;
 import idea.verlif.mockapi.config.PathRecorder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
@@ -39,9 +40,9 @@ public class MockApiBuilder {
             Method method = methodEntry.getValue().getMethod();
 
             // 结果mock
-            MockApi mockApi = handlerMethod.getMethodAnnotation(MockApi.class);
+            MockApi mockApi = AnnotationUtils.findAnnotation(handlerMethod.getMethod(), MockApi.class);
             if (mockApi == null) {
-                mockApi = handlerMethod.getBeanType().getAnnotation(MockApi.class);
+                mockApi = AnnotationUtils.findAnnotation(handlerMethod.getBeanType(), MockApi.class);
             }
             if (mockApi != null) {
                 recordPath(mappingInfo, handlerMethod.getBean(), method);
