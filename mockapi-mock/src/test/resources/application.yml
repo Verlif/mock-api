@@ -1,0 +1,14 @@
+server:
+  port: 8888
+
+spring:
+  profiles:
+    active: datapool
+
+logging:
+  level:
+    idea.verlif.mockapi: DEBUG
+
+mockapi:
+  enabled: true
+  path-strategy: replace

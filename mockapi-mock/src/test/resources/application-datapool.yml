@@ -1,0 +1,22 @@
+mockapi:
+  data:
+    enabled: true
+    pool:
+      - types: int
+        names: code
+        values: 200, 201
+      - types: int
+        names: age, count
+        values: 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32 ,33, 34 ,35
+      - names: name, nickname
+        values: 小明, 小红, 小刚, 小牛, 小羊, 小猪, 小狗, 小猫
+      - belongs: idea.verlif.test.global.domain.Favorite
+        names: name
+        values: 苹果, 西瓜, 梨子
+      - belongs: idea.verlif.test.global.domain.Favorite
+        enabled: false
+        types: String
+        names: type
+        values: 水果
+      - names: msg, type
+        values: 正确的, 错误的, 有意思的, 没毛病的

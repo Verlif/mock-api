@@ -1,0 +1,3 @@
+idea.verlif.mockapi.mock.config.MockApiMockBeanConfig
+idea.verlif.mockapi.mock.ParamsMocker
+idea.verlif.mockapi.mock.ResultMocker

@@ -5,13 +5,19 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>idea.verlif</groupId>
-    <artifactId>mock-api</artifactId>
-    <version>2.7.18-2.1</version>
+    <artifactId>mockapi</artifactId>
+    <version>2.7.18-3.0</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>mockapi-core</module>
+        <module>mockapi-mock</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <mockdata-version>4.0.0</mockdata-version>
     </properties>
 
     <parent>
@@ -21,42 +27,61 @@
         <relativePath/>
     </parent>
 
-    <dependencies>
-        <!-- SpringBoot依赖 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>idea.verlif</groupId>
+                <artifactId>mockapi-core</artifactId>
+                <version>2.7.18-3.0</version>
+            </dependency>
 
-        <dependency>
-            <groupId>com.github.Verlif</groupId>
-            <artifactId>mock-data</artifactId>
-            <version>3.4.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.Verlif</groupId>
-            <artifactId>param-parser</artifactId>
-            <version>1.3</version>
-        </dependency>
+            <!-- SpringBoot依赖 -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-web</artifactId>
+                <version>2.7.18</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-configuration-processor</artifactId>
+                <version>2.7.18</version>
+                <optional>true</optional>
+            </dependency>
 
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-            <version>1.7.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+            <dependency>
+                <groupId>com.github.Verlif.mockdata</groupId>
+                <artifactId>mockdata-core</artifactId>
+                <version>${mockdata-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.Verlif.mockdata</groupId>
+                <artifactId>mockdata-pool</artifactId>
+                <version>${mockdata-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.Verlif</groupId>
+                <artifactId>reflection-kit</artifactId>
+            </dependency>
+            <dependency>
+                <groupId>com.github.Verlif</groupId>
+                <artifactId>param-parser</artifactId>
+                <version>1.3</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-ui</artifactId>
+                <version>1.7.0</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.13.2</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <repositories>
         <repository>
