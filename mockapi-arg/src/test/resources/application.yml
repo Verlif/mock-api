@@ -1,0 +1,12 @@
+server:
+  port: 8889
+
+logging:
+  level:
+    idea.verlif.mockapi: DEBUG
+
+mockapi:
+  enabled: true
+  path-strategy: replace
+  arg:
+    enabled: true

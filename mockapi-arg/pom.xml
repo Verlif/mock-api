@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>idea.verlif</groupId>
+        <artifactId>mockapi</artifactId>
+        <version>2.7.18-3.0</version>
+    </parent>
+
+    <artifactId>mockapi-arg</artifactId>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>idea.verlif</groupId>
+            <artifactId>mockapi-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.Verlif.mockdata</groupId>
+            <artifactId>mockdata-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.Verlif.mockdata</groupId>
+            <artifactId>mockdata-pool</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.Verlif</groupId>
+            <artifactId>param-parser</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

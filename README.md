@@ -31,7 +31,7 @@ public BaseResult<User> getById(int id) {
 
 ![生成数据](/docs/3.x/imgs/数据对比.png)
 
-*这里使用了mockapi-mock组件*
+*这里使用了[mockapi-mock](https://github.com/Verlif/mockapi/tree/master/mockapi-mock)组件*
 
 相比较与一般的数据构造器，**MockApi**是自适应的，当接口返回值发生变化时不需要开发者进行任何调整，模拟接口会自动返回对应结构数据，几乎实现一劳永逸。
 
@@ -107,11 +107,15 @@ public class OtherRecorder {
 
 这样就可以通过`/mock/test/i`来访问对`Test`接口生成的`i`虚拟方法了。
 
-### 其他更优雅的方式
+### 开发文档
 
 请移步[开发文档](/docs/3.x/开发文档.md)
 
-当然，你也可以直接使用已经定义好的`mockapi-mock`。
+### 已定义好的组件
+
+已经定义好`@MocKResult`和`@MockParams`的 [mockapi-mock](https://github.com/Verlif/mockapi/tree/master/mockapi-mock)。
+
+自动填充接口入参的 [mockapi-arg](https://github.com/Verlif/mockapi/tree/master/mockapi-arg)。
 
 ## 使用
 
