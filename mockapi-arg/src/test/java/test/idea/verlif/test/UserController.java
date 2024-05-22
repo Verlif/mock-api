@@ -1,6 +1,8 @@
 package test.idea.verlif.test;
 
 import idea.verlif.mockapi.arg.MockArg;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,7 +16,7 @@ import java.util.List;
 public class UserController {
 
     @GetMapping("id")
-    public String id(@MockArg(mocker = MyArgMocker.class) String id, @MockArg @RequestParam("name") String name) {
+    public String id(@MockArg(mocker = MyArgMocker.class) @RequestParam("id") String id, @MockArg @RequestParam("name") String name) {
         return id + " - " + name;
     }
 

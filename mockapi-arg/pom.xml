@@ -22,6 +22,11 @@
             <groupId>idea.verlif</groupId>
             <artifactId>mockapi-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
 
         <dependency>
             <groupId>com.github.Verlif.mockdata</groupId>

@@ -10,33 +10,44 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.HandlerMethodArgumentResolverComposite;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MockArgResolver extends HandlerMethodArgumentResolverComposite {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MockArgResolver.class);
 
     private final ArgMockerCollector argMockerCollector;
+    private final Map<MethodParameter, MockArg> mockArgCache;
 
     public MockArgResolver(ArgMockerCollector argMockerCollector, List<HandlerMethodArgumentResolver> resolvers) {
         addResolvers(resolvers);
         this.argMockerCollector = argMockerCollector;
+        this.mockArgCache = new HashMap<>();
     }
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         MockArg mockArg = getMockArg(parameter);
-        return mockArg != null && mockArg.enabled();
+        if (mockArg != null) {
+            mockArgCache.put(parameter, mockArg);
+            return mockArg.enabled();
+        }
+        return false;
     }
 
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-        MockArg mockArg = getMockArg(parameter);
+        MockArg mockArg = mockArgCache.get(parameter);
         if (mockArg == null) {
             throw new MockApiException("Unsupported parameter - " + parameter.getParameterName());
         }
-        Object value = getObject(parameter, mavContainer, webRequest, binderFactory);
-        if (value == null || mockArg.force()) {
+        Object value = null;
+        if (!mockArg.force()) {
+            value = getObject(parameter, mavContainer, webRequest, binderFactory);
+        }
+        if (value == null) {
             ArgMocker argMocker = argMockerCollector.getArgMocker(mockArg.mocker());
             value = argMocker.mock(parameter, mockArg.data());
         }
